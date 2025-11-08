@@ -25,23 +25,71 @@
 [made-with-love-shield]: https://img.shields.io/badge/made%20with%20%E2%9D%A4%20by-it%40M-yellow?style=for-the-badge
 [license-shield]: https://img.shields.io/github/license/it-at-m/refarch-templates?style=for-the-badge
 
-# RefArch Templates
+# EvaSys-EAI
 
 [![Documentation][documentation-shield]][documentation]
 [![New issue][new-issue-shield]][new-issue]
 [![Made with love by it@M][made-with-love-shield]][itm-opensource]
 [![GitHub license][license-shield]][license]
 
-This project acts as a template and provides starter files for web application projects based on the RefArch (reference architecture) of it@M.
+This project provides an Enterprise Application Integration (EAI) solution for synchronizing course and trainer data between SAP Process Orchestration (SAP-PO) and EvaSys, a system used for managing evaluations and course information.
 
-To learn more about the architecture itself, checkout its [documentation][refarch-documentation] or [code][refarch-code].
+The goal of this integration is to ensure that course and trainer data in EvaSys remain consistent and up-to-date with the source information managed in SAP-HR and transmitted via SAP-PO. The EAI acts as a middleware component that receives, processes, and synchronizes data through SOAP web service interactions.
 
-The templates are based on [Spring][spring-documentation] and [Vue.js][vuejs-documentation].
+## Workflow
 
-## Usage
+```mermaid
+flowchart TD
+    subgraph SAP-HR
+        A(("**START**<br>Manual or<br>automatic"))
+        B[Select course and trainer data]
+    end
+    subgraph SAP-PO
+        C[Receive and forward data]
+    end
+    subgraph EAI
+        D[Receive data]
+        E{"**LOOP**<br>Is another record available?"}
+        F((("**END**<br>Courses & trainers<br>in EvaSys")))
+        G[Process trainer data]
+        I{Trainer exists?}
+        J[Create trainer]
+        K[Update trainer]
+        N[Query course]
+        P{Course exists?}
+        Q[Create course]
+        R[Update course]
+    end
+    subgraph EvaSys
+        H[GetUserBySubunit]
+        L[InsertTrainer]
+        M[UpdateTrainer]
+        O[GetCourse]
+        S[InsertCourse]
+        T[UpdateCourse]
+    end
 
-To get set up and learn more about the templates, please check out the [Getting Started][getting-started-documentation] page.
-Also check the respective pages with suggestions on how to [develop][develop-documentation], [document][document-documentation] and [organize][organize-documentation] your project.
+    A -->|Start data transfer| B
+    B --> C
+    C -->|SOAP| D
+    D --> E
+    E -->|No| F
+    E -->|Yes| G
+    G -->|SOAP Request| H
+    H -->|SOAP Response| I
+    I -->|Yes| K
+    I -->|No| J
+    J -->|SOAP Request| L
+    K -->|SOAP Request| M
+    L & M -->|SOAP Response| N
+    N -->|SOAP Request| O
+    O -->|SOAP Response| P
+    P -->|No| Q
+    P -->|Yes| R
+    Q --->|SOAP Request| S
+    R --->|SOAP Request| T
+    S & T --> E
+```
 
 ## Roadmap
 

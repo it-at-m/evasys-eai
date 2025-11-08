@@ -12,21 +12,21 @@ import wsdl.soapserver_v100.UnitList;
 @Component
 public class SubunitClient {
 
-    private static final Logger log = LoggerFactory.getLogger(SubunitClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SubunitClient.class);
     private final SoapPort soapPort;
 
-    public SubunitClient(SoapProperties props) {
+    public SubunitClient(final SoapProperties props) {
         this.soapPort = SoapPortFactory.createPort(
                 props.endpointUrl(),
                 props.username(),
                 props.password());
-        log.info("SOAP client configured to send requests to: {}", props.endpointUrl());
+        LOGGER.info("SOAP client configured to send requests to: {}", props.endpointUrl());
     }
 
     public UnitList getSubunits() throws SoapfaultMessage {
-        log.info("Requesting list of subunits...");
-        UnitList result = soapPort.getSubunits();
-        log.info("Received {} units", result.getUnits().size());
+        LOGGER.info("Requesting list of subunits...");
+        final UnitList result = soapPort.getSubunits();
+        LOGGER.info("Received {} units", result.getUnits().size());
         return result;
     }
 }

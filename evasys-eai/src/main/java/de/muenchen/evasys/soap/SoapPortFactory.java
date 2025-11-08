@@ -6,16 +6,20 @@ import java.util.List;
 import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.Soapserver;
 
-public class SoapPortFactory {
+public final class SoapPortFactory {
 
-    public static SoapPort createPort(String endpointUrl, String username, String password) {
-        Soapserver service = new Soapserver();
-        SoapPort port = service.getSoapPort();
+    private SoapPortFactory() {
+        throw new UnsupportedOperationException("Utility class should not be instantiated");
+    }
 
-        BindingProvider bp = (BindingProvider) port;
+    public static SoapPort createPort(final String endpointUrl, final String username, final String password) {
+        final Soapserver service = new Soapserver();
+        final SoapPort port = service.getSoapPort();
+
+        final BindingProvider bp = (BindingProvider) port;
         bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointUrl);
 
-        List<Handler> handlers = bp.getBinding().getHandlerChain();
+        final List<Handler> handlers = bp.getBinding().getHandlerChain();
         handlers.add(new SoapHeaderHandler(username, password));
         bp.getBinding().setHandlerChain(handlers);
 

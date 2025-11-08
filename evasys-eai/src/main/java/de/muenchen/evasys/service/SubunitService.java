@@ -10,7 +10,7 @@ public class SubunitService {
 
     private final SubunitClient client;
 
-    public SubunitService(SubunitClient client) {
+    public SubunitService(final SubunitClient client) {
         this.client = client;
     }
 

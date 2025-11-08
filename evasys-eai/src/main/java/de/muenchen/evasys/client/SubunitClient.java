@@ -1,11 +1,10 @@
 package de.muenchen.evasys.client;
 
+import de.muenchen.evasys.configuration.SoapProperties;
+import de.muenchen.evasys.soap.SoapPortFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import de.muenchen.evasys.configuration.SoapProperties;
-import de.muenchen.evasys.soap.SoapPortFactory;
 import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.SoapfaultMessage;
 import wsdl.soapserver_v100.UnitList;

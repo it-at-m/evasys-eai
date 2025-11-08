@@ -1,7 +1,6 @@
 package de.muenchen.evasys;
 
 import de.muenchen.evasys.service.SubunitService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;

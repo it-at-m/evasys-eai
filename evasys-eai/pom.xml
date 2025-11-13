@@ -74,11 +74,14 @@
     </properties>
 
     <dependencies>
-        <!-- Spring Web Services for SOAP -->
+
+        <!-- SAAJ-Implementierung für CXF: notwendig, damit SOAP-Nachrichten (MessageFactory) erzeugt und gesendet werden können -->
         <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web-services</artifactId>
-		</dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+
 
         <!-- Other dependencies required for generated domain objects -->
         <dependency>

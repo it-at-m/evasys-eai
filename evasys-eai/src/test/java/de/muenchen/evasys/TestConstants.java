@@ -1,4 +1,4 @@
-package de.muenchen.refarch;
+package de.muenchen.evasys;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

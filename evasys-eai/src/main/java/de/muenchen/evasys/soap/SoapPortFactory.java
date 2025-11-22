@@ -12,12 +12,12 @@ public final class SoapPortFactory {
         throw new UnsupportedOperationException("Utility class should not be instantiated");
     }
 
-    public static SoapPort createPort(final String endpointUrl, final String username, final String password) {
+    public static SoapPort createPort(final String uri, final String username, final String password) {
         final Soapserver service = new Soapserver();
         final SoapPort port = service.getSoapPort();
 
         final BindingProvider bp = (BindingProvider) port;
-        bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointUrl);
+        bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, uri);
 
         final List<Handler> handlers = bp.getBinding().getHandlerChain();
         handlers.add(new SoapHeaderHandler(username, password));

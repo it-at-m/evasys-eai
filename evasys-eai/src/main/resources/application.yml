@@ -1,5 +1,10 @@
-soap:
-  endpoint-url: null
+evasys:
+  uri: null
+  username: null
+  password: null
+
+sappo:
+  uri: null
   username: null
   password: null
 

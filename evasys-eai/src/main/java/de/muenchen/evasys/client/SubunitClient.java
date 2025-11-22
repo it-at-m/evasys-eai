@@ -1,6 +1,6 @@
 package de.muenchen.evasys.client;
 
-import de.muenchen.evasys.configuration.SoapProperties;
+import de.muenchen.evasys.configuration.EvaSysProperties;
 import de.muenchen.evasys.soap.SoapPortFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +15,12 @@ public class SubunitClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(SubunitClient.class);
     private final SoapPort soapPort;
 
-    public SubunitClient(final SoapProperties props) {
+    public SubunitClient(final EvaSysProperties props) {
         this.soapPort = SoapPortFactory.createPort(
-                props.endpointUrl(),
+                props.uri(),
                 props.username(),
                 props.password());
-        LOGGER.info("SOAP client configured to send requests to: {}", props.endpointUrl());
+        LOGGER.info("SOAP client configured to send requests to: {}", props.uri());
     }
 
     public UnitList getSubunits() throws SoapfaultMessage {

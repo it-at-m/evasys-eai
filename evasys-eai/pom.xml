@@ -74,14 +74,12 @@
     </properties>
 
     <dependencies>
-
         <!-- SAAJ-Implementierung für CXF: notwendig, damit SOAP-Nachrichten (MessageFactory) erzeugt und gesendet werden können -->
         <dependency>
             <groupId>com.sun.xml.messaging.saaj</groupId>
             <artifactId>saaj-impl</artifactId>
             <version>3.0.4</version>
         </dependency>
-
 
         <!-- Other dependencies required for generated domain objects -->
         <dependency>

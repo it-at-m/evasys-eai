@@ -6,6 +6,7 @@ import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.EvaSysException;
 import de.muenchen.evasys.configuration.EvaSysProperties;
 import de.muenchen.evasys.soap.SoapPortFactory;
+import jakarta.annotation.PostConstruct;
 import jakarta.xml.ws.Holder;
 import java.util.List;
 import org.slf4j.Logger;
@@ -24,14 +25,23 @@ import wsdl.soapserver_v100.UserList;
 public class EvaSysClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EvaSysClient.class);
-    private final SoapPort soapPort;
+    private SoapPort soapPort;
+    private final EvaSysProperties props;
 
     public EvaSysClient(final EvaSysProperties props) {
-        this.soapPort = SoapPortFactory.createPort(
-                props.uri(),
-                props.username(),
-                props.password());
-        LOGGER.info("SOAP client configured to send requests to: {}", props.uri());
+        this.props = props;
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            this.soapPort = SoapPortFactory.createPort(
+                    props.uri(),
+                    props.username(),
+                    props.password());
+        } catch (Exception e) {
+            throw new EvaSysException("Failed to initialize SOAP client", e);
+        }
     }
 
     public UnitList getSubunits() {
@@ -158,19 +168,7 @@ public class EvaSysClient {
         LOGGER.info("Updating course data...");
         try {
             final Course updatedCourse = new Course();
-            final ObjectNode json = JsonNodeFactory.instance.objectNode();
-            json.put("1", trainingData.getTRAINERGESCHL());
-            json.put("2", trainingData.getTRAINEROBJTYP());
-            json.put("3", trainingData.getFIRMA());
-            json.put("4", ""); // always empty
-            json.put("5", ""); // always empty
-            json.put("6", trainingData.getTEILBEREICHID());
-            json.put("7", trainingData.getTRAININGBEGINN());
-            json.put("8", trainingData.getTRAININGENDE());
-            json.put("9", String.join(" ", trainingData.getVAVNAME(), trainingData.getVANNAME()));
-            json.put("10", String.join(" ", trainingData.getSBVNAME(), trainingData.getSBNNAME()));
-            json.put("11", trainingData.getTRAININGDAUERTAGE());
-            json.put("12", trainingData.getTRAININGDAUERSTD());
+            final ObjectNode json = buildCourseJson(trainingData);
 
             updatedCourse.setMNCourseId(Integer.parseInt(trainingData.getTRAININGID()));
             updatedCourse.setMNCourseType(1); // always constant (1 = Standard)
@@ -192,19 +190,7 @@ public class EvaSysClient {
         LOGGER.info("Inserting new course...");
         try {
             final Course newCourse = new Course();
-            final ObjectNode json = JsonNodeFactory.instance.objectNode();
-            json.put("1", trainingData.getTRAINERGESCHL());
-            json.put("2", trainingData.getTRAINEROBJTYP());
-            json.put("3", trainingData.getFIRMA());
-            json.put("4", ""); // always empty
-            json.put("5", ""); // always empty
-            json.put("6", trainingData.getTEILBEREICHID());
-            json.put("7", trainingData.getTRAININGBEGINN());
-            json.put("8", trainingData.getTRAININGENDE());
-            json.put("9", String.join(" ", trainingData.getVAVNAME(), trainingData.getVANNAME()));
-            json.put("10", String.join(" ", trainingData.getSBVNAME(), trainingData.getSBNNAME()));
-            json.put("11", trainingData.getTRAININGDAUERTAGE());
-            json.put("12", trainingData.getTRAININGDAUERSTD());
+            final ObjectNode json = buildCourseJson(trainingData);
 
             newCourse.setMNCourseId(Integer.parseInt(trainingData.getTRAININGID()));
             newCourse.setMSProgramOfStudy(trainingData.getTRAININGSTYPKUERZEL());
@@ -223,5 +209,22 @@ public class EvaSysClient {
         } catch (Exception e) {
             throw new EvaSysException("Unexpected error while inserting course", e);
         }
+    }
+
+    private ObjectNode buildCourseJson(final ZLSOSTEVASYSRFC trainingData) {
+        final ObjectNode json = JsonNodeFactory.instance.objectNode();
+        json.put("1", trainingData.getTRAINERGESCHL());
+        json.put("2", trainingData.getTRAINEROBJTYP());
+        json.put("3", trainingData.getFIRMA());
+        json.put("4", ""); // always empty
+        json.put("5", ""); // always empty
+        json.put("6", trainingData.getTEILBEREICHID());
+        json.put("7", trainingData.getTRAININGBEGINN());
+        json.put("8", trainingData.getTRAININGENDE());
+        json.put("9", String.join(" ", trainingData.getVAVNAME(), trainingData.getVANNAME()));
+        json.put("10", String.join(" ", trainingData.getSBVNAME(), trainingData.getSBNNAME()));
+        json.put("11", trainingData.getTRAININGDAUERTAGE());
+        json.put("12", trainingData.getTRAININGDAUERSTD());
+        return json;
     }
 }

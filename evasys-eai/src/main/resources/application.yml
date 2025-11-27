@@ -8,6 +8,9 @@ sappo:
   username: null
   password: null
 
+cxf:
+  path: /ws
+
 spring:
   main:
     banner-mode: console

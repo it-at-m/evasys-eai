@@ -152,8 +152,8 @@ public class EvaSysClient {
     public boolean isCourseExisting(final int courseId) {
         try {
             final CourseIdType courseIdType = CourseIdType.PUBLIC; // always constant
-            soapPort.getCourse(String.valueOf(courseId), courseIdType, false, false);
-            return true;
+            final Course foundCourse = soapPort.getCourse(String.valueOf(courseId), courseIdType, false, false);
+            return foundCourse.getMNCourseId() == courseId;
         } catch (Exception e) {
             LOGGER.error("Error", e);
             return false;

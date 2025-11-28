@@ -13,7 +13,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
 import wsdl.soapserver_v100.CourseList;
@@ -24,7 +23,6 @@ import wsdl.soapserver_v100.User;
 import wsdl.soapserver_v100.UserIdType;
 import wsdl.soapserver_v100.UserList;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public class EvaSysClientTest {
 

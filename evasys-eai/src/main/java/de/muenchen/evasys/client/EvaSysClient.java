@@ -6,11 +6,11 @@ import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.EvaSysException;
 import de.muenchen.evasys.configuration.EvaSysProperties;
 import de.muenchen.evasys.soap.SoapPortFactory;
-import jakarta.annotation.PostConstruct;
 import jakarta.xml.ws.Holder;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
@@ -25,23 +25,20 @@ import wsdl.soapserver_v100.UserList;
 public class EvaSysClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EvaSysClient.class);
-    private SoapPort soapPort;
-    private final EvaSysProperties props;
 
+    private final SoapPort soapPort;
+
+    @Autowired
     public EvaSysClient(final EvaSysProperties props) {
-        this.props = props;
+        this.soapPort = SoapPortFactory.createPort(
+                props.uri(),
+                props.username(),
+                props.password());
     }
 
-    @PostConstruct
-    public void init() {
-        try {
-            this.soapPort = SoapPortFactory.createPort(
-                    props.uri(),
-                    props.username(),
-                    props.password());
-        } catch (Exception e) {
-            throw new EvaSysException("Failed to initialize SOAP client", e);
-        }
+    // Test constructor
+    protected EvaSysClient(EvaSysProperties props, final SoapPort soapPort) {
+        this.soapPort = soapPort;
     }
 
     public UnitList getSubunits() {

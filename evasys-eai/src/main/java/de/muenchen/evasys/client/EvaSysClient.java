@@ -137,7 +137,6 @@ public class EvaSysClient {
             newUser.setMSTitle(trainingData.getTRAINER1TITEL());
             newUser.setMSFirstName(trainingData.getTRAINER1VNAME());
             newUser.setMSSurName(trainingData.getTRAINER1NNAME());
-            newUser.setMSUnitName("test");
             newUser.setMSEmail(trainingData.getTRAINER1MAIL());
             newUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
             newUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));

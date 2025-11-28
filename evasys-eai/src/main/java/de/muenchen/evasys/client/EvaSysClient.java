@@ -94,12 +94,7 @@ public class EvaSysClient {
         try {
             final UserList users = getUsersBySubunit(subunitId);
             final List<User> userList = users.getUsers();
-            for (final User user : userList) {
-                if (user.getMNId() == trainerId) {
-                    return true;
-                }
-            }
-            return false;
+            return userList.stream().anyMatch(user -> user.getMNId() == trainerId);
         } catch (Exception e) {
             LOGGER.error("Error", e);
             return false;

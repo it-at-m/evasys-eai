@@ -1,5 +1,14 @@
 package de.muenchen.evasys.client;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
@@ -11,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
@@ -45,12 +53,12 @@ public class EvaSysClientTest {
         UnitList mockedResponse = new UnitList();
         mockedResponse.getUnits().add(mockedUnit);
 
-        Mockito.when(soapPortMock.getSubunits()).thenReturn(mockedResponse);
+        when(soapPortMock.getSubunits()).thenReturn(mockedResponse);
 
         UnitList result = evaSysClient.getSubunits();
 
-        Assertions.assertEquals(1, result.getUnits().size());
-        Assertions.assertEquals(mockedUnit, result.getUnits().getFirst());
+        assertEquals(1, result.getUnits().size());
+        assertEquals(mockedUnit, result.getUnits().getFirst());
     }
 
     @Test
@@ -59,18 +67,18 @@ public class EvaSysClientTest {
         UserList mockedResponse = new UserList();
         mockedResponse.getUsers().add(mockedUser);
 
-        Mockito.when(soapPortMock.getUsersBySubunit(
-                Mockito.anyInt(),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getUsersBySubunit(
+                anyInt(),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
                 .thenReturn(mockedResponse);
 
         UserList result = evaSysClient.getUsersBySubunit(1);
 
-        Assertions.assertEquals(1, result.getUsers().size());
-        Assertions.assertEquals(mockedUser, result.getUsers().getFirst());
+        assertEquals(1, result.getUsers().size());
+        assertEquals(mockedUser, result.getUsers().getFirst());
     }
 
     @Test
@@ -79,13 +87,13 @@ public class EvaSysClientTest {
         UserList mockedUserList = new UserList();
         mockedUserList.getUsers().add(mockedUser);
 
-        Mockito.when(soapPortMock.getUserByIdConsiderExternalID(
-                Mockito.anyString(),
-                Mockito.any(UserIdType.class),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                toString(),
+                any(UserIdType.class),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
                 .thenReturn(mockedUserList);
 
         User result = evaSysClient.getUser(1);
@@ -99,16 +107,16 @@ public class EvaSysClientTest {
         CourseList mockedCourseList = new CourseList();
         mockedCourseList.getCourses().add(mockedCourse);
 
-        Mockito.when(soapPortMock.getCourse(
-                Mockito.anyString(),
-                Mockito.any(CourseIdType.class),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getCourse(
+                toString(),
+                any(CourseIdType.class),
+                eq(false),
+                eq(false)))
                 .thenReturn(mockedCourse);
 
         Course result = evaSysClient.getCourse(1);
 
-        Assertions.assertEquals(mockedCourse, result);
+        assertEquals(mockedCourse, result);
     }
 
     @Test
@@ -119,17 +127,17 @@ public class EvaSysClientTest {
         UserList mockedUserList = new UserList();
         mockedUserList.getUsers().add(mockedUser);
 
-        Mockito.when(soapPortMock.getUsersBySubunit(
-                Mockito.anyInt(),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getUsersBySubunit(
+                anyInt(),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
                 .thenReturn(mockedUserList);
 
         boolean result = evaSysClient.isTrainerExisting(trainerId, 1);
 
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -139,17 +147,17 @@ public class EvaSysClientTest {
         UserList mockedUserList = new UserList();
         mockedUserList.getUsers().add(emptyUser);
 
-        Mockito.when(soapPortMock.getUsersBySubunit(
-                Mockito.anyInt(),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getUsersBySubunit(
+                anyInt(),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
                 .thenReturn(mockedUserList);
 
         boolean result = evaSysClient.isTrainerExisting(trainerId, 1);
 
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -167,18 +175,18 @@ public class EvaSysClientTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
-        Mockito.verify(soapPortMock).updateUser(captor.capture());
+        verify(soapPortMock).updateUser(captor.capture());
 
         User captured = captor.getValue().value;
 
-        Assertions.assertEquals(1, captured.getMNId());
-        Assertions.assertEquals("1", captured.getMSExternalId());
-        Assertions.assertEquals("Dr.", captured.getMSTitle());
-        Assertions.assertEquals("Max", captured.getMSFirstName());
-        Assertions.assertEquals("Mustermann", captured.getMSSurName());
-        Assertions.assertEquals("max@example.com", captured.getMSEmail());
-        Assertions.assertEquals(1, captured.getMNFbid());
-        Assertions.assertEquals(1, captured.getMNAddressId());
+        assertEquals(1, captured.getMNId());
+        assertEquals("1", captured.getMSExternalId());
+        assertEquals("Dr.", captured.getMSTitle());
+        assertEquals("Max", captured.getMSFirstName());
+        assertEquals("Mustermann", captured.getMSSurName());
+        assertEquals("max@example.com", captured.getMSEmail());
+        assertEquals(1, captured.getMNFbid());
+        assertEquals(1, captured.getMNAddressId());
     }
 
     @Test
@@ -196,17 +204,17 @@ public class EvaSysClientTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
-        Mockito.verify(soapPortMock).insertUser(captor.capture());
+        verify(soapPortMock).insertUser(captor.capture());
 
         User captured = captor.getValue().value;
 
-        Assertions.assertEquals("1", captured.getMSExternalId());
-        Assertions.assertEquals("Dr.", captured.getMSTitle());
-        Assertions.assertEquals("Max", captured.getMSFirstName());
-        Assertions.assertEquals("Mustermann", captured.getMSSurName());
-        Assertions.assertEquals("max@example.com", captured.getMSEmail());
-        Assertions.assertEquals(1, captured.getMNFbid());
-        Assertions.assertEquals(1, captured.getMNAddressId());
+        assertEquals("1", captured.getMSExternalId());
+        assertEquals("Dr.", captured.getMSTitle());
+        assertEquals("Max", captured.getMSFirstName());
+        assertEquals("Mustermann", captured.getMSSurName());
+        assertEquals("max@example.com", captured.getMSEmail());
+        assertEquals(1, captured.getMNFbid());
+        assertEquals(1, captured.getMNAddressId());
     }
 
     @Test
@@ -215,16 +223,16 @@ public class EvaSysClientTest {
         Course mockedCourse = new Course();
         mockedCourse.setMNCourseId(courseId);
 
-        Mockito.when(soapPortMock.getCourse(
-                Mockito.eq(String.valueOf(courseId)),
-                Mockito.eq(CourseIdType.PUBLIC),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getCourse(
+                eq(String.valueOf(courseId)),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
                 .thenReturn(mockedCourse);
 
         boolean result = evaSysClient.isCourseExisting(courseId);
 
-        Assertions.assertTrue(result);
+        assertTrue(result);
     }
 
     @Test
@@ -232,16 +240,16 @@ public class EvaSysClientTest {
         int courseId = 1;
         Course emptyCourse = new Course();
 
-        Mockito.when(soapPortMock.getCourse(
-                Mockito.eq(String.valueOf(courseId)),
-                Mockito.eq(CourseIdType.PUBLIC),
-                Mockito.eq(false),
-                Mockito.eq(false)))
+        when(soapPortMock.getCourse(
+                eq(String.valueOf(courseId)),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
                 .thenReturn(emptyCourse);
 
         boolean result = evaSysClient.isCourseExisting(courseId);
 
-        Assertions.assertFalse(result);
+        assertFalse(result);
     }
 
     @Test
@@ -268,16 +276,16 @@ public class EvaSysClientTest {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<Course>> captor = ArgumentCaptor.forClass(Holder.class);
 
-        Mockito.verify(soapPortMock).updateCourse(captor.capture(), Mockito.eq(false));
+        verify(soapPortMock).updateCourse(captor.capture(), eq(false));
 
         Holder<Course> capturedHolder = captor.getValue();
         Course captured = capturedHolder.value;
 
-        Assertions.assertEquals(11, captured.getMNCourseId());
-        Assertions.assertEquals(1, captured.getMNCourseType());
-        Assertions.assertEquals("11", captured.getMSPubCourseId());
-        Assertions.assertEquals(22, captured.getMNUserId());
-        Assertions.assertEquals(33, captured.getMNFbid());
+        assertEquals(11, captured.getMNCourseId());
+        assertEquals(1, captured.getMNCourseType());
+        assertEquals("11", captured.getMSPubCourseId());
+        assertEquals(22, captured.getMNUserId());
+        assertEquals(33, captured.getMNFbid());
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode actualJson = mapper.readTree(captured.getMSCustomFieldsJSON());
@@ -297,7 +305,7 @@ public class EvaSysClientTest {
                 "12": "40"
                 }
                 """);
-        Assertions.assertEquals(expectedJson, actualJson);
+        assertEquals(expectedJson, actualJson);
     }
 
     @Test
@@ -326,16 +334,16 @@ public class EvaSysClientTest {
         evaSysClient.insertCourse(trainingData);
 
         ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
-        Mockito.verify(soapPortMock).insertCourse(captor.capture());
+        verify(soapPortMock).insertCourse(captor.capture());
 
         Course captured = captor.getValue();
 
-        Assertions.assertEquals("11", captured.getMSPubCourseId());
-        Assertions.assertEquals("Test", captured.getMSProgramOfStudy());
-        Assertions.assertEquals("Test-Kurs", captured.getMSCourseTitle());
-        Assertions.assertEquals("1.20", captured.getMSRoom());
-        Assertions.assertEquals(22, captured.getMNUserId());
-        Assertions.assertEquals(33, captured.getMNFbid());
+        assertEquals("11", captured.getMSPubCourseId());
+        assertEquals("Test", captured.getMSProgramOfStudy());
+        assertEquals("Test-Kurs", captured.getMSCourseTitle());
+        assertEquals("1.20", captured.getMSRoom());
+        assertEquals(22, captured.getMNUserId());
+        assertEquals(33, captured.getMNFbid());
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode actualJson = mapper.readTree(captured.getMSCustomFieldsJSON());
@@ -355,6 +363,6 @@ public class EvaSysClientTest {
                 "12": "40"
                 }
                 """);
-        Assertions.assertEquals(expectedJson, actualJson);
+        assertEquals(expectedJson, actualJson);
     }
 }

@@ -155,9 +155,9 @@ public class EvaSysClientTest {
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenUpdatingTrainer() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
-        trainingData.setTRAINER1ID("511");
-        trainingData.setTRAINER1TITEL("Dr. 1");
-        trainingData.setTRAINER1VNAME("Fabian");
+        trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1TITEL("Dr.");
+        trainingData.setTRAINER1VNAME("Max");
         trainingData.setTRAINER1NNAME("Mustermann");
         trainingData.setTRAINER1MAIL("max@example.com");
         trainingData.setTEILBEREICHID("1");
@@ -171,10 +171,10 @@ public class EvaSysClientTest {
 
         User captured = captor.getValue().value;
 
-        Assertions.assertEquals(511, captured.getMNId());
-        Assertions.assertEquals("511", captured.getMSExternalId());
-        Assertions.assertEquals("Dr. 1", captured.getMSTitle());
-        Assertions.assertEquals("Fabian", captured.getMSFirstName());
+        Assertions.assertEquals(1, captured.getMNId());
+        Assertions.assertEquals("1", captured.getMSExternalId());
+        Assertions.assertEquals("Dr.", captured.getMSTitle());
+        Assertions.assertEquals("Max", captured.getMSFirstName());
         Assertions.assertEquals("Mustermann", captured.getMSSurName());
         Assertions.assertEquals("max@example.com", captured.getMSEmail());
         Assertions.assertEquals(1, captured.getMNFbid());
@@ -184,11 +184,11 @@ public class EvaSysClientTest {
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenInsertingTrainer() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
-        trainingData.setTRAINER1ID("999999998");
-        trainingData.setTRAINER1TITEL("Dr. 1");
+        trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1TITEL("Dr.");
         trainingData.setTRAINER1VNAME("Max");
-        trainingData.setTRAINER1NNAME("Testermann");
-        trainingData.setTRAINER1MAIL("test@example.com");
+        trainingData.setTRAINER1NNAME("Mustermann");
+        trainingData.setTRAINER1MAIL("max@example.com");
         trainingData.setTEILBEREICHID("1");
         trainingData.setTRAINERGESCHL("1");
 
@@ -200,11 +200,11 @@ public class EvaSysClientTest {
 
         User captured = captor.getValue().value;
 
-        Assertions.assertEquals("999999998", captured.getMSExternalId());
-        Assertions.assertEquals("Dr. 1", captured.getMSTitle());
+        Assertions.assertEquals("1", captured.getMSExternalId());
+        Assertions.assertEquals("Dr.", captured.getMSTitle());
         Assertions.assertEquals("Max", captured.getMSFirstName());
-        Assertions.assertEquals("Testermann", captured.getMSSurName());
-        Assertions.assertEquals("test@example.com", captured.getMSEmail());
+        Assertions.assertEquals("Mustermann", captured.getMSSurName());
+        Assertions.assertEquals("max@example.com", captured.getMSEmail());
         Assertions.assertEquals(1, captured.getMNFbid());
         Assertions.assertEquals(1, captured.getMNAddressId());
     }
@@ -247,7 +247,7 @@ public class EvaSysClientTest {
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenUpdatingCourse() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
-        trainingData.setTRAININGID("902");
+        trainingData.setTRAININGID("11");
         trainingData.setTRAINERGESCHL("männlich");
         trainingData.setTRAINEROBJTYP("INTERNAL");
         trainingData.setFIRMA("Test-Firma");
@@ -260,8 +260,8 @@ public class EvaSysClientTest {
         trainingData.setSBNNAME("Musterfrau");
         trainingData.setTRAININGDAUERTAGE("5");
         trainingData.setTRAININGDAUERSTD("40");
-        trainingData.setTRAINER1ID("511");
-        trainingData.setTEILBEREICHID("5");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
 
         evaSysClient.updateCourse(trainingData);
 
@@ -273,11 +273,11 @@ public class EvaSysClientTest {
         Holder<Course> capturedHolder = captor.getValue();
         Course captured = capturedHolder.value;
 
-        Assertions.assertEquals(902, captured.getMNCourseId());
+        Assertions.assertEquals(11, captured.getMNCourseId());
         Assertions.assertEquals(1, captured.getMNCourseType());
-        Assertions.assertEquals("902", captured.getMSPubCourseId());
-        Assertions.assertEquals(511, captured.getMNUserId());
-        Assertions.assertEquals(5, captured.getMNFbid());
+        Assertions.assertEquals("11", captured.getMSPubCourseId());
+        Assertions.assertEquals(22, captured.getMNUserId());
+        Assertions.assertEquals(33, captured.getMNFbid());
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode actualJson = mapper.readTree(captured.getMSCustomFieldsJSON());
@@ -288,7 +288,7 @@ public class EvaSysClientTest {
                 "3": "Test-Firma",
                 "4": "",
                 "5": "",
-                "6": "5",
+                "6": "33",
                 "7": "2025-10-01",
                 "8": "2025-10-05",
                 "9": "Max Mustermann",
@@ -303,9 +303,9 @@ public class EvaSysClientTest {
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenInsertingCourse() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
-        trainingData.setTRAININGID("903");
+        trainingData.setTRAININGID("11");
         trainingData.setTRAININGSTYPKUERZEL("Test");
-        trainingData.setTRAININGTITEL("Test-Kurs (903)");
+        trainingData.setTRAININGTITEL("Test-Kurs");
         trainingData.setTRAININGRAUM("1.20");
         trainingData.setTRAININGTNANZAHL("1");
         trainingData.setTRAINERGESCHL("männlich");
@@ -320,8 +320,8 @@ public class EvaSysClientTest {
         trainingData.setSBNNAME("Musterfrau");
         trainingData.setTRAININGDAUERTAGE("5");
         trainingData.setTRAININGDAUERSTD("40");
-        trainingData.setTRAINER1ID("511");
-        trainingData.setTEILBEREICHID("5");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
 
         evaSysClient.insertCourse(trainingData);
 
@@ -330,10 +330,12 @@ public class EvaSysClientTest {
 
         Course captured = captor.getValue();
 
-        Assertions.assertEquals("903", captured.getMSPubCourseId());
+        Assertions.assertEquals("11", captured.getMSPubCourseId());
         Assertions.assertEquals("Test", captured.getMSProgramOfStudy());
-        Assertions.assertEquals("Test-Kurs (903)", captured.getMSCourseTitle());
+        Assertions.assertEquals("Test-Kurs", captured.getMSCourseTitle());
         Assertions.assertEquals("1.20", captured.getMSRoom());
+        Assertions.assertEquals(22, captured.getMNUserId());
+        Assertions.assertEquals(33, captured.getMNFbid());
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode actualJson = mapper.readTree(captured.getMSCustomFieldsJSON());
@@ -344,7 +346,7 @@ public class EvaSysClientTest {
                 "3": "Test-Firma",
                 "4": "",
                 "5": "",
-                "6": "5",
+                "6": "33",
                 "7": "2025-10-01",
                 "8": "2025-10-05",
                 "9": "Max Mustermann",

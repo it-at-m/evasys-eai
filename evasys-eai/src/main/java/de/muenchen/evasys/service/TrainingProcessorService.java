@@ -27,7 +27,6 @@ public class TrainingProcessorService {
                 LOGGER.error("Error processing trainer {}: {}",
                         trainingData.getTRAINER1ID(), e.getMessage());
             }
-            processTrainer(trainingData);
         }
     }
 

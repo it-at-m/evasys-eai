@@ -22,10 +22,14 @@ public class TrainingProcessorService {
         for (final ZLSOSTEVASYSRFC trainingData : trainingRequest.getITEVASYSRFC().getItem()) {
             try {
                 processTrainer(trainingData);
+            } catch (EvaSysException e) {
+                LOGGER.error("Trainer processing failed: {}", e.getMessage());
+            }
+
+            try {
                 processCourse(trainingData);
             } catch (EvaSysException e) {
-                LOGGER.error("Error processing trainer {}: {}",
-                        trainingData.getTRAINER1ID(), e.getMessage());
+                LOGGER.error("Course processing failed: {}", e.getMessage());
             }
         }
     }

@@ -1,0 +1,117 @@
+package de.muenchen.evasys.service;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
+import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC.ITEVASYSRFC;
+import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class TrainingProcessorServiceTest {
+
+    @Mock
+    private EvaSysService evaSysMockService;
+
+    private TrainingProcessorService trainingProcessorService;
+
+    @BeforeEach
+    public void setup() {
+        trainingProcessorService = new TrainingProcessorService(evaSysMockService);
+    }
+
+    private ZLSOSTEVASYSRFC createTrainingData(String trainerId, String subunitId, String courseId) {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAINER1ID(trainerId);
+        trainingData.setTEILBEREICHID(subunitId);
+        trainingData.setTRAININGID(courseId);
+        return trainingData;
+    }
+
+    private ZLSOEVASYSRFC createRequestWithItems(ZLSOSTEVASYSRFC... trainingData) {
+        ZLSOEVASYSRFC trainingRequest = new ZLSOEVASYSRFC();
+        ITEVASYSRFC rfcItemContainer = new ZLSOEVASYSRFC.ITEVASYSRFC();
+        trainingRequest.setITEVASYSRFC(rfcItemContainer);
+        rfcItemContainer.getItem().addAll(List.of(trainingData));
+        return trainingRequest;
+    }
+
+    @Test
+    public void testThatTrainerIsUpdatedIfTrainerExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(true);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, times(1)).updateTrainer(trainingData);
+        verify(evaSysMockService, never()).insertTrainer(trainingData);
+    }
+
+    @Test
+    public void testThatTrainerIsInsertedIfTrainerDoesNotExist() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(false);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, never()).updateTrainer(trainingData);
+        verify(evaSysMockService, times(1)).insertTrainer(trainingData);
+    }
+
+    @Test
+    public void testThatCourseIsUpdatedIfCourseExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.courseExists(anyInt())).thenReturn(true);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, times(1)).updateCourse(trainingData);
+        verify(evaSysMockService, never()).insertCourse(trainingData);
+    }
+
+    @Test
+    public void testThatCourseIsInsertedIfCourseDoesNotExist() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.courseExists(anyInt())).thenReturn(false);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, never()).updateCourse(trainingData);
+        verify(evaSysMockService, times(1)).insertCourse(trainingData);
+    }
+
+    @Test
+    public void testThatMultipleTrainingsCanBeProcessed() {
+        ZLSOSTEVASYSRFC trainingData1 = createTrainingData("1", "1", "1");
+        ZLSOSTEVASYSRFC trainingData2 = createTrainingData("2", "2", "2");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData1, trainingData2);
+
+        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(false);
+        when(evaSysMockService.courseExists(anyInt())).thenReturn(false);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, never()).updateTrainer(any());
+        verify(evaSysMockService, times(2)).insertTrainer(any());
+        verify(evaSysMockService, never()).updateCourse(any());
+        verify(evaSysMockService, times(2)).insertCourse(any());
+    }
+}

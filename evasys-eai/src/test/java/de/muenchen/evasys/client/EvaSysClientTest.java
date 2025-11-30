@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -88,7 +89,7 @@ public class EvaSysClientTest {
         mockedUserList.getUsers().add(mockedUser);
 
         when(soapPortMock.getUserByIdConsiderExternalID(
-                toString(),
+                anyString(),
                 any(UserIdType.class),
                 eq(false),
                 eq(false),
@@ -108,7 +109,7 @@ public class EvaSysClientTest {
         mockedCourseList.getCourses().add(mockedCourse);
 
         when(soapPortMock.getCourse(
-                toString(),
+                anyString(),
                 any(CourseIdType.class),
                 eq(false),
                 eq(false)))

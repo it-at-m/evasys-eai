@@ -19,6 +19,7 @@ public class TrainingProcessorService {
     }
 
     public void processTrainingRequest(final ZLSOEVASYSRFC trainingRequest) {
+        LOGGER.info("Processing training requests...");
         for (final ZLSOSTEVASYSRFC trainingData : trainingRequest.getITEVASYSRFC().getItem()) {
             try {
                 processTrainer(trainingData);
@@ -32,6 +33,7 @@ public class TrainingProcessorService {
                 LOGGER.error("Course processing failed: {}", e.getMessage());
             }
         }
+        LOGGER.info("All training requests processed");
     }
 
     private void processTrainer(final ZLSOSTEVASYSRFC trainingData) {

@@ -17,9 +17,9 @@ public class WebServiceConfiguration {
 
     private final TrainingProcessorService trainingProcessorService;
 
-    public WebServiceConfiguration(final SapPoProperties props) {
+    public WebServiceConfiguration(final SapPoProperties props, final TrainingProcessorService trainingProcessorService) {
         this.props = props;
-        this.trainingProcessorService = null;
+        this.trainingProcessorService = trainingProcessorService;
     }
 
     @Bean

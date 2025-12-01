@@ -233,6 +233,118 @@ public class EvaSysClientTest {
     }
 
     @Test
+    public void testThatSecondaryTrainerIsExistingReturnsTrue() throws Exception {
+        int secTrainerId = 2;
+        User mockedUser = new User();
+        mockedUser.setMSExternalId(String.valueOf(secTrainerId));
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUsersBySubunit(
+                anyInt(),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        boolean result = evaSysClient.isTrainerExisting(secTrainerId, 1);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testThatSecondaryTrainerIsNotExistingReturnsFalse() throws Exception {
+        int secTrainerId = 2;
+        User emptyUser = new User();
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(emptyUser);
+
+        when(soapPortMock.getUsersBySubunit(
+                anyInt(),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        boolean result = evaSysClient.isTrainerExisting(secTrainerId, 1);
+
+        assertFalse(result);
+    }
+
+    @Test
+    public void shouldCallSoapPortWithCorrectUserWhenUpdatingSecondaryTrainer() throws Exception {
+        ZLSOSTEVASYSRFC secTrainerData = new ZLSOSTEVASYSRFC();
+        secTrainerData.setSEKTRAINERID("2");
+        secTrainerData.setSEKTRAINERTITEL("Prof.");
+        secTrainerData.setSEKTRAINERVNAME("Anna");
+        secTrainerData.setSEKTRAINERNNAME("Musterfrau");
+        secTrainerData.setSEKTRAINERMAIL("anna@example.com");
+        secTrainerData.setTEILBEREICHID("1");
+        secTrainerData.setTRAINERGESCHL("2");
+
+        User mockedUser = new User();
+        mockedUser.setMNId(22);
+        UserList mockedResponse = new UserList();
+        mockedResponse.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedResponse);
+
+        evaSysClient.updateSecondaryTrainer(secTrainerData);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock).updateUser(captor.capture());
+
+        User captured = captor.getValue().value;
+
+        assertEquals(22, captured.getMNId());
+        assertEquals("2", captured.getMSExternalId());
+        assertEquals("Prof.", captured.getMSTitle());
+        assertEquals("Anna", captured.getMSFirstName());
+        assertEquals("Musterfrau", captured.getMSSurName());
+        assertEquals("anna@example.com", captured.getMSEmail());
+        assertEquals(1, captured.getMNFbid());
+        assertEquals(2, captured.getMNAddressId());
+    }
+
+    @Test
+    public void shouldCallSoapPortWithCorrectUserWhenInsertingSecondaryTrainer() throws Exception {
+        ZLSOSTEVASYSRFC secTrainerData = new ZLSOSTEVASYSRFC();
+        secTrainerData.setSEKTRAINERID("2");
+        secTrainerData.setSEKTRAINERTITEL("Prof.");
+        secTrainerData.setSEKTRAINERVNAME("Anna");
+        secTrainerData.setSEKTRAINERNNAME("Musterfrau");
+        secTrainerData.setSEKTRAINERMAIL("anna@example.com");
+        secTrainerData.setTEILBEREICHID("1");
+        secTrainerData.setTRAINERGESCHL("2");
+
+        evaSysClient.insertSecondaryTrainer(secTrainerData);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock).insertUser(captor.capture());
+
+        User captured = captor.getValue().value;
+
+        assertEquals("2", captured.getMSExternalId());
+        assertEquals("Prof.", captured.getMSTitle());
+        assertEquals("Anna", captured.getMSFirstName());
+        assertEquals("Musterfrau", captured.getMSSurName());
+        assertEquals("anna@example.com", captured.getMSEmail());
+        assertEquals(1, captured.getMNFbid());
+        assertEquals(2, captured.getMNAddressId());
+    }
+
+    @Test
     public void testThatCourseIsExisitingReturnsTrue() throws Exception {
         int courseId = 1;
         Course mockedCourse = new Course();

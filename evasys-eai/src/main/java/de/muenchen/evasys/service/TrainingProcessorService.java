@@ -45,6 +45,16 @@ public class TrainingProcessorService {
         } else {
             evaSysService.insertTrainer(trainingData);
         }
+
+        if (evaSysService.hasSecondaryTrainer(trainingData)) {
+            final int secondaryTrainerId = Integer.parseInt(trainingData.getSEKTRAINERID());
+
+            if (evaSysService.trainerExists(secondaryTrainerId, subunitId)) {
+                evaSysService.updateSecondaryTrainer(trainingData);
+            } else {
+                evaSysService.insertSecondaryTrainer(trainingData);
+            }
+        }
     }
 
     private void processCourse(final ZLSOSTEVASYSRFC trainingData) {

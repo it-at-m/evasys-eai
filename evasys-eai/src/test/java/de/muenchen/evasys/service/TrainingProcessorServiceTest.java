@@ -73,6 +73,53 @@ public class TrainingProcessorServiceTest {
     }
 
     @Test
+    public void testThatSecondaryTrainerIsUpdatedIfExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        trainingData.setSEKTRAINERID("2");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
+        when(evaSysMockService.hasSecondaryTrainer(trainingData)).thenReturn(true);
+        when(evaSysMockService.trainerExists(2, 1)).thenReturn(true);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, times(1)).updateSecondaryTrainer(trainingData);
+        verify(evaSysMockService, never()).insertSecondaryTrainer(trainingData);
+    }
+
+    @Test
+    public void testThatSecondaryTrainerIsInsertedIfNotExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        trainingData.setSEKTRAINERID("2");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
+        when(evaSysMockService.hasSecondaryTrainer(trainingData)).thenReturn(true);
+        when(evaSysMockService.trainerExists(2, 1)).thenReturn(false);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, never()).updateSecondaryTrainer(trainingData);
+        verify(evaSysMockService, times(1)).insertSecondaryTrainer(trainingData);
+    }
+
+    @Test
+    public void testThatNoSecondaryTrainerMethodsCalledIfNoSecondaryTrainer() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        trainingData.setSEKTRAINERID(null); // oder leer ""
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
+        when(evaSysMockService.hasSecondaryTrainer(trainingData)).thenReturn(false);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evaSysMockService, never()).updateSecondaryTrainer(any());
+        verify(evaSysMockService, never()).insertSecondaryTrainer(any());
+    }
+
+    @Test
     public void testThatCourseIsUpdatedIfCourseExists() {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);

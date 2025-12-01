@@ -161,6 +161,56 @@ public class EvaSysClient {
         }
     }
 
+    public boolean hasSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        return trainingData.getSEKTRAINERID() != null && !trainingData.getSEKTRAINERID().isEmpty();
+    }
+
+    public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        LOGGER.info("Inserting new secondary trainer...");
+        try {
+            final User newUser = new User();
+            newUser.setMNType(1);
+            newUser.setMSExternalId(trainingData.getSEKTRAINERID());
+            newUser.setMSTitle(trainingData.getSEKTRAINERTITEL());
+            newUser.setMSFirstName(trainingData.getSEKTRAINERVNAME());
+            newUser.setMSSurName(trainingData.getSEKTRAINERNNAME());
+            newUser.setMSEmail(trainingData.getSEKTRAINERMAIL());
+            newUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
+            newUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
+            final Holder<User> userHolder = new Holder<>(newUser);
+            soapPort.insertUser(userHolder);
+            LOGGER.info("Secondary trainer with ID {} successfully inserted", trainingData.getSEKTRAINERID());
+        } catch (SoapfaultMessage e) {
+            throw new EvaSysException("SOAP error while inserting secondary trainer", e);
+        } catch (Exception e) {
+            throw new EvaSysException("Unexpected error while inserting secondary trainer", e);
+        }
+    }
+
+    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        LOGGER.info("Updating secondary trainer data...");
+        try {
+            final User foundUser = getUser(Integer.parseInt(trainingData.getSEKTRAINERID()));
+            final User updatedUser = new User();
+            updatedUser.setMNType(1);
+            updatedUser.setMNId(foundUser.getMNId());
+            updatedUser.setMSExternalId(trainingData.getSEKTRAINERID());
+            updatedUser.setMSTitle(trainingData.getSEKTRAINERTITEL());
+            updatedUser.setMSFirstName(trainingData.getSEKTRAINERVNAME());
+            updatedUser.setMSSurName(trainingData.getSEKTRAINERNNAME());
+            updatedUser.setMSEmail(trainingData.getSEKTRAINERMAIL());
+            updatedUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
+            updatedUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
+            final Holder<User> userHolder = new Holder<>(updatedUser);
+            soapPort.updateUser(userHolder);
+            LOGGER.info("Secondary trainer with ID {} successfully updated", trainingData.getSEKTRAINERID());
+        } catch (SoapfaultMessage e) {
+            throw new EvaSysException("SOAP error while updating secondary trainer", e);
+        } catch (Exception e) {
+            throw new EvaSysException("Unexpected error while updating secondary trainer", e);
+        }
+    }
+
     public boolean isCourseExisting(final int courseId) {
         LOGGER.info("Checking whether course exists...");
         try {

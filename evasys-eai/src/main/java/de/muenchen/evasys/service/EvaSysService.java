@@ -25,6 +25,18 @@ public class EvaSysService {
         client.insertTrainer(trainingData);
     }
 
+    public boolean hasSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        return client.hasSecondaryTrainer(trainingData);
+    }
+
+    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        client.updateSecondaryTrainer(trainingData);
+    }
+
+    public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        client.insertSecondaryTrainer(trainingData);
+    }
+
     public boolean courseExists(final int courseId) {
         return client.isCourseExisting(courseId);
     }

@@ -40,55 +40,61 @@ The goal of this integration is to ensure that course and trainer data in EvaSys
 
 ```mermaid
 flowchart TD
-    subgraph SAP-HR
-        A(("**START**<br>Manual or<br>automatic"))
-        B[Select course and trainer data]
-    end
-    subgraph SAP-PO
-        C[Receive and forward data]
-    end
-    subgraph EAI
-        D[Receive data]
-        E{"**LOOP**<br>Is another record available?"}
-        F((("**END**<br>Courses & trainers<br>in EvaSys")))
-        G[Process trainer data]
-        I{Trainer exists?}
-        J[Create trainer]
-        K[Update trainer]
-        N[Query course]
-        P{Course exists?}
-        Q[Create course]
-        R[Update course]
-    end
-    subgraph EvaSys
-        H[GetUserBySubunit]
-        L[InsertTrainer]
-        M[UpdateTrainer]
-        O[GetCourse]
-        S[InsertCourse]
-        T[UpdateCourse]
-    end
+  subgraph SAP-HR
+    A(("START</br>Manual / Automatic"))
+    B[Select course & trainer data]
+  end
 
-    A -->|Start data transfer| B
-    B --> C
-    C -->|SOAP| D
-    D --> E
-    E -->|No| F
-    E -->|Yes| G
-    G -->|SOAP Request| H
-    H -->|SOAP Response| I
-    I -->|Yes| K
-    I -->|No| J
-    J -->|SOAP Request| L
-    K -->|SOAP Request| M
-    L & M -->|SOAP Response| N
-    N -->|SOAP Request| O
-    O -->|SOAP Response| P
-    P -->|No| Q
-    P -->|Yes| R
-    Q --->|SOAP Request| S
-    R --->|SOAP Request| T
-    S & T --> E
+  subgraph SAP-PO
+    C[Receive & forward]
+  end
+
+  subgraph EAI
+    D[Process items]
+    E{"More items?"}
+    END((END</br>Courses & trainers</br>in EvaSys))
+
+    P[Process primary trainer]
+    S{Secondary</br>trainer</br>present?}
+    CP{Trainer</br>exists?}
+    CS{Trainer</br>exists?}
+    QC[Process course]
+    CC{Course exists?}
+  end
+
+  subgraph EvaSys
+    U[GetUsersBySubunit]
+    I1[InsertTrainer]
+    U1[UpdateTrainer]
+    I2[InsertSecondaryTrainer]
+    U2[UpdateSecondaryTrainer]
+    GC[GetCourse]
+    IC[InsertCourse]
+    UC[UpdateCourse]
+  end
+
+  A --> B --> C --> D --> E
+  E -->|No| END
+  E -->|Yes| P
+
+  %% primary trainer
+  P -->|query| U
+  U --> CP
+  CP -->|No| I1 --> S
+  CP -->|Yes| U1 --> S
+
+  %% secondary trainer (optional)
+  S -->|Yes| CS
+  S -->|No| QC
+  CS -->|No| I2 --> QC
+  CS -->|Yes| U2 --> QC
+
+  %% course
+  QC -->|query| GC
+  GC --> CC
+  CC -->|No| IC --> E
+  CC -->|Yes| UC --> E
+
 ```
 
 ## Roadmap

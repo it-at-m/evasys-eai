@@ -1,7 +1,6 @@
 package de.muenchen.evasys.endpoint;
 
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
-import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.lhm.pi.evasys.afs.SITrainingASIB;
 import de.muenchen.evasys.service.TrainingProcessorService;
 import org.slf4j.Logger;
@@ -19,11 +18,10 @@ public class SapServiceEndpoint implements SITrainingASIB {
 
     @Override
     public void siTrainingASIB(final ZLSOEVASYSRFC trainingRequest) {
-        // Just for Logging
-        final ZLSOSTEVASYSRFC firstItem = trainingRequest.getITEVASYSRFC().getItem().getFirst();
-        LOGGER.info("Training received (first only): id={}, title={}", firstItem.getTRAININGID(), firstItem.getTRAININGTITEL());
-
-        // Handing the data off to the TrainingProcessorService
-        trainingProcessorService.processTrainingRequest(trainingRequest);
+        try {
+            trainingProcessorService.processTrainingRequest(trainingRequest);
+        } catch (Exception e) {
+            LOGGER.error("Error processing SAP message", e);
+        }
     }
 }

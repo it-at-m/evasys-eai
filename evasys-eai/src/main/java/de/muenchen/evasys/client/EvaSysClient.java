@@ -59,7 +59,13 @@ public class EvaSysClient {
             LOGGER.info("Received {} users", users.getUsers().size());
             return users;
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while requesting users by subunit", e);
+            final String errorCode = e.getFaultInfo().getSErrorMessage();
+            switch (errorCode) {
+            case "ERR_305":
+                throw new EvaSysException("User not found for subunit", e);
+            default:
+                throw new EvaSysException("SOAP error code:" + errorCode, e);
+            }
         } catch (Exception e) {
             throw new EvaSysException("Unexpected error while requesting users by subunit", e);
         }
@@ -84,17 +90,25 @@ public class EvaSysClient {
             final CourseIdType courseIdType = CourseIdType.PUBLIC; // always constant
             return soapPort.getCourse(String.valueOf(courseId), courseIdType, false, false);
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while requesting course data", e);
+            final String errorCode = e.getFaultInfo().getSErrorMessage();
+            switch (errorCode) {
+            case "ERR_312":
+                LOGGER.info("No course found for courseId {}", courseId);
+                return null;
+            default:
+                throw new EvaSysException("SOAP error code:" + errorCode, e);
+            }
         } catch (Exception e) {
             throw new EvaSysException("Unexpected error while requesting course data", e);
         }
     }
 
     public boolean isTrainerExisting(final int trainerId, final int subunitId) {
+        LOGGER.info("Checking whether trainer exists...");
         try {
             final UserList users = getUsersBySubunit(subunitId);
             final List<User> userList = users.getUsers();
-            return userList.stream().anyMatch(user -> user.getMNId() == trainerId);
+            return userList.stream().anyMatch(user -> String.valueOf(trainerId).equals(user.getMSExternalId()));
         } catch (Exception e) {
             LOGGER.error("Error", e);
             return false;
@@ -104,9 +118,10 @@ public class EvaSysClient {
     public void updateTrainer(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Updating trainer data...");
         try {
+            final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
             final User updatedUser = new User();
             updatedUser.setMNType(1);
-            updatedUser.setMNId(Integer.parseInt(trainingData.getTRAINER1ID()));
+            updatedUser.setMNId(foundUser.getMNId());
             updatedUser.setMSExternalId(trainingData.getTRAINER1ID());
             updatedUser.setMSTitle(trainingData.getTRAINER1TITEL());
             updatedUser.setMSFirstName(trainingData.getTRAINER1VNAME());
@@ -116,6 +131,7 @@ public class EvaSysClient {
             updatedUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
             final Holder<User> userHolder = new Holder<>(updatedUser);
             soapPort.updateUser(userHolder);
+            LOGGER.info("Trainer with ID {} sucessfully updated", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while updating trainer", e);
         } catch (Exception e) {
@@ -137,6 +153,7 @@ public class EvaSysClient {
             newUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
             final Holder<User> userHolder = new Holder<>(newUser);
             soapPort.insertUser(userHolder);
+            LOGGER.info("Trainer with ID {} sucessfully inserted", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while inserting trainer", e);
         } catch (Exception e) {
@@ -145,10 +162,10 @@ public class EvaSysClient {
     }
 
     public boolean isCourseExisting(final int courseId) {
+        LOGGER.info("Checking whether course exists...");
         try {
-            final CourseIdType courseIdType = CourseIdType.PUBLIC; // always constant
-            final Course foundCourse = soapPort.getCourse(String.valueOf(courseId), courseIdType, false, false);
-            return foundCourse.getMNCourseId() == courseId;
+            final Course foundCourse = getCourse(courseId);
+            return foundCourse != null;
         } catch (Exception e) {
             LOGGER.error("Error", e);
             return false;
@@ -158,18 +175,21 @@ public class EvaSysClient {
     public void updateCourse(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Updating course data...");
         try {
+            final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
+            final Course foundCourse = getCourse(Integer.parseInt(trainingData.getTRAININGID()));
             final Course updatedCourse = new Course();
             final ObjectNode json = buildCourseJson(trainingData);
 
-            updatedCourse.setMNCourseId(Integer.parseInt(trainingData.getTRAININGID()));
-            updatedCourse.setMNCourseType(1); // always constant (1 = Standard)
+            updatedCourse.setMNCourseId(foundCourse.getMNCourseId());
+            updatedCourse.setMNCourseType(Integer.parseInt(trainingData.getTRAININGART()));
             updatedCourse.setMSPubCourseId(trainingData.getTRAININGID());
             updatedCourse.setMSCustomFieldsJSON(json.toString());
-            updatedCourse.setMNUserId(Integer.parseInt(trainingData.getTRAINER1ID()));
+            updatedCourse.setMNUserId(foundUser.getMNId());
             updatedCourse.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
 
             final Holder<Course> courseHolder = new Holder<>(updatedCourse);
             soapPort.updateCourse(courseHolder, false);
+            LOGGER.info("Course with ID {} successfully updated", trainingData.getTRAININGID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while updating course", e);
         } catch (Exception e) {
@@ -180,6 +200,7 @@ public class EvaSysClient {
     public void insertCourse(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Inserting new course...");
         try {
+            final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
             final Course newCourse = new Course();
             final ObjectNode json = buildCourseJson(trainingData);
 
@@ -187,14 +208,15 @@ public class EvaSysClient {
             newCourse.setMSProgramOfStudy(trainingData.getTRAININGSTYPKUERZEL());
             newCourse.setMSCourseTitle(trainingData.getTRAININGTITEL());
             newCourse.setMSRoom(trainingData.getTRAININGRAUM());
-            newCourse.setMNCourseType(1); // always constant (1 = Standard)
+            newCourse.setMNCourseType(Integer.parseInt(trainingData.getTRAININGART()));
             newCourse.setMSPubCourseId(trainingData.getTRAININGID());
             newCourse.setMNCountStud(Integer.parseInt(trainingData.getTRAININGTNANZAHL()));
             newCourse.setMSCustomFieldsJSON(json.toString());
-            newCourse.setMNUserId(Integer.parseInt(trainingData.getTRAINER1ID()));
+            newCourse.setMNUserId(foundUser.getMNId());
             newCourse.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
 
             soapPort.insertCourse(newCourse);
+            LOGGER.info("Course with ID {} sucessfully inserted", trainingData.getTRAININGID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while inserting course", e);
         } catch (Exception e) {

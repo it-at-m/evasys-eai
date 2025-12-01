@@ -124,7 +124,7 @@ public class EvaSysClientTest {
     public void testThatTrainerIsExisitingReturnsTrue() throws Exception {
         int trainerId = 1;
         User mockedUser = new User();
-        mockedUser.setMNId(trainerId);
+        mockedUser.setMSExternalId(String.valueOf(trainerId));
         UserList mockedUserList = new UserList();
         mockedUserList.getUsers().add(mockedUser);
 
@@ -172,6 +172,20 @@ public class EvaSysClientTest {
         trainingData.setTEILBEREICHID("1");
         trainingData.setTRAINERGESCHL("1");
 
+        User mockedUser = new User();
+        mockedUser.setMNId(11);
+        UserList mockedResponse = new UserList();
+        mockedResponse.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedResponse);
+
         evaSysClient.updateTrainer(trainingData);
 
         @SuppressWarnings("unchecked")
@@ -180,7 +194,7 @@ public class EvaSysClientTest {
 
         User captured = captor.getValue().value;
 
-        assertEquals(1, captured.getMNId());
+        assertEquals(11, captured.getMNId());
         assertEquals("1", captured.getMSExternalId());
         assertEquals("Dr.", captured.getMSTitle());
         assertEquals("Max", captured.getMSFirstName());
@@ -239,14 +253,13 @@ public class EvaSysClientTest {
     @Test
     public void testThatCourseIsNotExisitingReturnsFalse() throws Exception {
         int courseId = 1;
-        Course emptyCourse = new Course();
 
         when(soapPortMock.getCourse(
                 eq(String.valueOf(courseId)),
                 eq(CourseIdType.PUBLIC),
                 eq(false),
                 eq(false)))
-                .thenReturn(emptyCourse);
+                .thenReturn(null);
 
         boolean result = evaSysClient.isCourseExisting(courseId);
 
@@ -257,6 +270,7 @@ public class EvaSysClientTest {
     public void shouldCallSoapPortWithCorrectUserWhenUpdatingCourse() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAININGID("11");
+        trainingData.setTRAININGART("1");
         trainingData.setTRAINERGESCHL("männlich");
         trainingData.setTRAINEROBJTYP("INTERNAL");
         trainingData.setFIRMA("Test-Firma");
@@ -272,6 +286,29 @@ public class EvaSysClientTest {
         trainingData.setTRAINER1ID("22");
         trainingData.setTEILBEREICHID("33");
 
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        UserList mockedUserListResponse = new UserList();
+        mockedUserListResponse.getUsers().add(mockedUser);
+        Course mockedCourseResponse = new Course();
+        mockedCourseResponse.setMNCourseId(55);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserListResponse);
+
+        when(soapPortMock.getCourse(
+                anyString(),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedCourseResponse);
+
         evaSysClient.updateCourse(trainingData);
 
         @SuppressWarnings("unchecked")
@@ -282,10 +319,10 @@ public class EvaSysClientTest {
         Holder<Course> capturedHolder = captor.getValue();
         Course captured = capturedHolder.value;
 
-        assertEquals(11, captured.getMNCourseId());
+        assertEquals(55, captured.getMNCourseId());
         assertEquals(1, captured.getMNCourseType());
         assertEquals("11", captured.getMSPubCourseId());
-        assertEquals(22, captured.getMNUserId());
+        assertEquals(44, captured.getMNUserId());
         assertEquals(33, captured.getMNFbid());
 
         ObjectMapper mapper = new ObjectMapper();
@@ -316,6 +353,7 @@ public class EvaSysClientTest {
         trainingData.setTRAININGSTYPKUERZEL("Test");
         trainingData.setTRAININGTITEL("Test-Kurs");
         trainingData.setTRAININGRAUM("1.20");
+        trainingData.setTRAININGART("1");
         trainingData.setTRAININGTNANZAHL("1");
         trainingData.setTRAINERGESCHL("männlich");
         trainingData.setTRAINEROBJTYP("INTERNAL");
@@ -332,6 +370,20 @@ public class EvaSysClientTest {
         trainingData.setTRAINER1ID("22");
         trainingData.setTEILBEREICHID("33");
 
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        UserList mockedResponse = new UserList();
+        mockedResponse.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedResponse);
+
         evaSysClient.insertCourse(trainingData);
 
         ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
@@ -343,7 +395,7 @@ public class EvaSysClientTest {
         assertEquals("Test", captured.getMSProgramOfStudy());
         assertEquals("Test-Kurs", captured.getMSCourseTitle());
         assertEquals("1.20", captured.getMSRoom());
-        assertEquals(22, captured.getMNUserId());
+        assertEquals(44, captured.getMNUserId());
         assertEquals(33, captured.getMNFbid());
 
         ObjectMapper mapper = new ObjectMapper();

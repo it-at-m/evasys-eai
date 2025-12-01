@@ -173,17 +173,17 @@
                                 <wsdlOption>
                                     <wsdl>${basedir}/src/main/resources/wsdl/evasys-soapserver-v100.wsdl</wsdl>
                                     <validate>none</validate>
-                                    <!-- <extraargs>
-                                        <extraarg>-p</extraarg>
-                                        <extraarg>wsdl.soapserver_v100</extraarg>
-                                        <extraarg>-xjc-Xts</extraarg>
-                                    </extraargs> -->
+                                    <extraargs>
+                                        <extraarg>-wsdlLocation</extraarg>
+                                        <extraarg>classpath:wsdl/evasys-soapserver-v100.wsdl</extraarg>
+                                    </extraargs>
                                 </wsdlOption>
                                 <wsdlOption>
                                     <wsdl>${basedir}/src/main/resources/wsdl/SI_Training_AS_IB.wsdl</wsdl>
-                                    <!--<extraargs>
-                                        <extraarg>-xjc-Xts</extraarg>
-                                    </extraargs>-->
+                                    <extraargs>
+                                        <extraarg>-wsdlLocation</extraarg>
+                                        <extraarg>classpath:wsdl/SI_Training_AS_IB.wsdl</extraarg>
+                                    </extraargs>
                                 </wsdlOption>
                             </wsdlOptions>
                         </configuration>

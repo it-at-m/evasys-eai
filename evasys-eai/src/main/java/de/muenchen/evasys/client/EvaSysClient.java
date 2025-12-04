@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.EvaSysException;
 import de.muenchen.evasys.configuration.EvaSysProperties;
+import de.muenchen.evasys.dto.SecondaryTrainer;
 import de.muenchen.evasys.soap.SoapPortFactory;
 import jakarta.xml.ws.Holder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,22 +164,57 @@ public class EvaSysClient {
         }
     }
 
-    public boolean hasSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
-        return trainingData.getSEKTRAINERID() != null && !trainingData.getSEKTRAINERID().isEmpty();
+    public List<SecondaryTrainer> extractSecondaryTrainers(final ZLSOSTEVASYSRFC trainingData) {
+
+        if (trainingData.getSEKTRAINERID() == null || trainingData.getSEKTRAINERID().isBlank()) {
+            return List.of();
+        }
+
+        final List<String> ids = split(trainingData.getSEKTRAINERID());
+        final List<String> anreden = split(trainingData.getSEKTRAINERANREDE());
+        final List<String> titel = split(trainingData.getSEKTRAINERTITEL());
+        final List<String> firstNames = split(trainingData.getSEKTRAINERVNAME());
+        final List<String> lastNames = split(trainingData.getSEKTRAINERNNAME());
+        final List<String> emails = split(trainingData.getSEKTRAINERMAIL());
+
+        final int size = ids.size();
+
+        if (List.of(anreden, titel, firstNames, lastNames, emails)
+                .stream().anyMatch(list -> list.size() != size)) {
+            throw new EvaSysException("Secondary trainer lists have inconsistent length", null);
+        }
+
+        final List<SecondaryTrainer> trainers = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            trainers.add(new SecondaryTrainer(
+                    ids.get(i),
+                    anreden.get(i),
+                    titel.get(i),
+                    firstNames.get(i),
+                    lastNames.get(i),
+                    emails.get(i)));
+        }
+        return trainers;
     }
 
-    public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+    private static List<String> split(final String str) {
+        return Arrays.stream(str.split(";"))
+                .map(String::trim)
+                .toList();
+    }
+
+    public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
         LOGGER.info("Inserting new secondary trainer...");
         try {
             final User newUser = new User();
             newUser.setMNType(1);
-            newUser.setMSExternalId(trainingData.getSEKTRAINERID());
-            newUser.setMSTitle(trainingData.getSEKTRAINERTITEL());
-            newUser.setMSFirstName(trainingData.getSEKTRAINERVNAME());
-            newUser.setMSSurName(trainingData.getSEKTRAINERNNAME());
-            newUser.setMSEmail(trainingData.getSEKTRAINERMAIL());
+            newUser.setMSExternalId(secondaryTrainer.id());
+            newUser.setMSTitle(secondaryTrainer.titel());
+            newUser.setMSFirstName(secondaryTrainer.vorname());
+            newUser.setMSSurName(secondaryTrainer.nachname());
+            newUser.setMSEmail(secondaryTrainer.email());
             newUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
-            newUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
+            newUser.setMNAddressId(Integer.parseInt(secondaryTrainer.anrede()));
             final Holder<User> userHolder = new Holder<>(newUser);
             soapPort.insertUser(userHolder);
             LOGGER.info("Secondary trainer with ID {} successfully inserted", trainingData.getSEKTRAINERID());
@@ -187,23 +225,23 @@ public class EvaSysClient {
         }
     }
 
-    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
+    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
         LOGGER.info("Updating secondary trainer data...");
         try {
-            final User foundUser = getUser(Integer.parseInt(trainingData.getSEKTRAINERID()));
+            final User foundUser = getUser(Integer.parseInt(secondaryTrainer.id()));
             final User updatedUser = new User();
             updatedUser.setMNType(1);
             updatedUser.setMNId(foundUser.getMNId());
-            updatedUser.setMSExternalId(trainingData.getSEKTRAINERID());
-            updatedUser.setMSTitle(trainingData.getSEKTRAINERTITEL());
-            updatedUser.setMSFirstName(trainingData.getSEKTRAINERVNAME());
-            updatedUser.setMSSurName(trainingData.getSEKTRAINERNNAME());
-            updatedUser.setMSEmail(trainingData.getSEKTRAINERMAIL());
+            updatedUser.setMSExternalId(secondaryTrainer.id());
+            updatedUser.setMSTitle(secondaryTrainer.titel());
+            updatedUser.setMSFirstName(secondaryTrainer.vorname());
+            updatedUser.setMSSurName(secondaryTrainer.nachname());
+            updatedUser.setMSEmail(secondaryTrainer.email());
             updatedUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
-            updatedUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
+            updatedUser.setMNAddressId(Integer.parseInt(secondaryTrainer.anrede()));
             final Holder<User> userHolder = new Holder<>(updatedUser);
             soapPort.updateUser(userHolder);
-            LOGGER.info("Secondary trainer with ID {} successfully updated", trainingData.getSEKTRAINERID());
+            LOGGER.info("Secondary trainer with ID {} successfully updated", secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while updating secondary trainer", e);
         } catch (Exception e) {

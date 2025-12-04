@@ -3,6 +3,8 @@ package de.muenchen.evasys.service;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.EvaSysException;
+import de.muenchen.evasys.dto.SecondaryTrainer;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -46,13 +48,15 @@ public class TrainingProcessorService {
             evaSysService.insertTrainer(trainingData);
         }
 
-        if (evaSysService.hasSecondaryTrainer(trainingData)) {
-            final int secondaryTrainerId = Integer.parseInt(trainingData.getSEKTRAINERID());
+        final List<SecondaryTrainer> trainers = evaSysService.extractSecondaryTrainers(trainingData);
+
+        for (final SecondaryTrainer trainer : trainers) {
+            final int secondaryTrainerId = Integer.parseInt(trainer.id());
 
             if (evaSysService.trainerExists(secondaryTrainerId, subunitId)) {
-                evaSysService.updateSecondaryTrainer(trainingData);
+                evaSysService.updateSecondaryTrainer(trainingData, trainer);
             } else {
-                evaSysService.insertSecondaryTrainer(trainingData);
+                evaSysService.insertSecondaryTrainer(trainingData, trainer);
             }
         }
     }

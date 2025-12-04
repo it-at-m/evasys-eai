@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC.ITEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
+import de.muenchen.evasys.dto.SecondaryTrainer;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,13 +80,24 @@ public class TrainingProcessorServiceTest {
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
         when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
-        when(evaSysMockService.hasSecondaryTrainer(trainingData)).thenReturn(true);
+
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
+
         when(evaSysMockService.trainerExists(2, 1)).thenReturn(true);
+
+        when(evaSysMockService.extractSecondaryTrainers(trainingData))
+                .thenReturn(List.of(secondaryTrainer));
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, times(1)).updateSecondaryTrainer(trainingData);
-        verify(evaSysMockService, never()).insertSecondaryTrainer(trainingData);
+        verify(evaSysMockService, times(1)).updateSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evaSysMockService, never()).insertSecondaryTrainer(trainingData, secondaryTrainer);
     }
 
     @Test
@@ -95,28 +107,40 @@ public class TrainingProcessorServiceTest {
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
         when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
-        when(evaSysMockService.hasSecondaryTrainer(trainingData)).thenReturn(true);
+
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
+
         when(evaSysMockService.trainerExists(2, 1)).thenReturn(false);
+
+        when(evaSysMockService.extractSecondaryTrainers(trainingData))
+                .thenReturn(List.of(secondaryTrainer));
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateSecondaryTrainer(trainingData);
-        verify(evaSysMockService, times(1)).insertSecondaryTrainer(trainingData);
+        verify(evaSysMockService, never()).updateSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evaSysMockService, times(1)).insertSecondaryTrainer(trainingData, secondaryTrainer);
     }
 
     @Test
     public void testThatNoSecondaryTrainerMethodsCalledIfNoSecondaryTrainer() {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
-        trainingData.setSEKTRAINERID(null); // oder leer ""
+        trainingData.setSEKTRAINERID(null);
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
         when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
-        when(evaSysMockService.hasSecondaryTrainer(trainingData)).thenReturn(false);
+
+        when(evaSysMockService.extractSecondaryTrainers(trainingData)).thenReturn(List.of());
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateSecondaryTrainer(any());
-        verify(evaSysMockService, never()).insertSecondaryTrainer(any());
+        verify(evaSysMockService, never()).updateSecondaryTrainer(any(), any());
+        verify(evaSysMockService, never()).insertSecondaryTrainer(any(), any());
     }
 
     @Test

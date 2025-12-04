@@ -2,6 +2,8 @@ package de.muenchen.evasys.service;
 
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.client.EvaSysClient;
+import de.muenchen.evasys.dto.SecondaryTrainer;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,16 +27,16 @@ public class EvaSysService {
         client.insertTrainer(trainingData);
     }
 
-    public boolean hasSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
-        return client.hasSecondaryTrainer(trainingData);
+    public List<SecondaryTrainer> extractSecondaryTrainers(final ZLSOSTEVASYSRFC trainingData) {
+        return client.extractSecondaryTrainers(trainingData);
     }
 
-    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
-        client.updateSecondaryTrainer(trainingData);
+    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
+        client.updateSecondaryTrainer(trainingData, secondaryTrainer);
     }
 
-    public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData) {
-        client.insertSecondaryTrainer(trainingData);
+    public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
+        client.insertSecondaryTrainer(trainingData, secondaryTrainer);
     }
 
     public boolean courseExists(final int courseId) {

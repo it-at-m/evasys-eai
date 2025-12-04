@@ -2,6 +2,7 @@ package de.muenchen.evasys.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -13,8 +14,11 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
+import de.muenchen.evasys.configuration.EvaSysException;
 import de.muenchen.evasys.configuration.EvaSysProperties;
+import de.muenchen.evasys.dto.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +50,19 @@ public class EvaSysClientTest {
     public void setup() {
         evaSysProperties = new EvaSysProperties("http://dummy", "user", "password");
         evaSysClient = new EvaSysClient(evaSysProperties, soapPortMock);
+    }
+
+    private ZLSOSTEVASYSRFC createData(
+            String id, String anrede, String titel,
+            String vorname, String nachname, String email) {
+        ZLSOSTEVASYSRFC data = new ZLSOSTEVASYSRFC();
+        data.setSEKTRAINERID(id);
+        data.setSEKTRAINERANREDE(anrede);
+        data.setSEKTRAINERTITEL(titel);
+        data.setSEKTRAINERVNAME(vorname);
+        data.setSEKTRAINERNNAME(nachname);
+        data.setSEKTRAINERMAIL(email);
+        return data;
     }
 
     @Test
@@ -233,56 +250,99 @@ public class EvaSysClientTest {
     }
 
     @Test
-    public void testThatSecondaryTrainerIsExistingReturnsTrue() throws Exception {
-        int secTrainerId = 2;
-        User mockedUser = new User();
-        mockedUser.setMSExternalId(String.valueOf(secTrainerId));
-        UserList mockedUserList = new UserList();
-        mockedUserList.getUsers().add(mockedUser);
+    void testReturnsEmptyListWhenNoSecondaryTrainer() {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setSEKTRAINERID(null);
 
-        when(soapPortMock.getUsersBySubunit(
-                anyInt(),
-                eq(false),
-                eq(false),
-                eq(false),
-                eq(false)))
-                .thenReturn(mockedUserList);
+        List<SecondaryTrainer> trainers = evaSysClient.extractSecondaryTrainers(trainingData);
 
-        boolean result = evaSysClient.isTrainerExisting(secTrainerId, 1);
-
-        assertTrue(result);
+        assertTrue(trainers.isEmpty());
     }
 
     @Test
-    public void testThatSecondaryTrainerIsNotExistingReturnsFalse() throws Exception {
-        int secTrainerId = 2;
-        User emptyUser = new User();
-        UserList mockedUserList = new UserList();
-        mockedUserList.getUsers().add(emptyUser);
+    void testParsesSingleSecondaryTrainer() {
+        ZLSOSTEVASYSRFC trainingData = createData(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
 
-        when(soapPortMock.getUsersBySubunit(
-                anyInt(),
-                eq(false),
-                eq(false),
-                eq(false),
-                eq(false)))
-                .thenReturn(mockedUserList);
+        List<SecondaryTrainer> result = evaSysClient.extractSecondaryTrainers(trainingData);
 
-        boolean result = evaSysClient.isTrainerExisting(secTrainerId, 1);
+        assertEquals(1, result.size());
+        SecondaryTrainer t = result.get(0);
 
-        assertFalse(result);
+        assertEquals("2", t.id());
+        assertEquals("2", t.anrede());
+        assertEquals("Prof.", t.titel());
+        assertEquals("Erika", t.vorname());
+        assertEquals("Musterfrau", t.nachname());
+        assertEquals("erika@example.com", t.email());
+    }
+
+    @Test
+    void testParsesMultipleSecondaryTrainers() {
+        ZLSOSTEVASYSRFC trainingData = createData(
+                "11; 22",
+                "1; 2",
+                "Dr.; Prof.",
+                "Max; Erika",
+                "Mustermann; Musterfrau",
+                "max@example.com; erika@example.com");
+
+        List<SecondaryTrainer> result = evaSysClient.extractSecondaryTrainers(trainingData);
+
+        assertEquals(2, result.size());
+
+        SecondaryTrainer t1 = result.get(0);
+        SecondaryTrainer t2 = result.get(1);
+
+        assertEquals("11", t1.id());
+        assertEquals("22", t2.id());
+
+        assertEquals("1", t1.anrede());
+        assertEquals("2", t2.anrede());
+
+        assertEquals("Dr.", t1.titel());
+        assertEquals("Prof.", t2.titel());
+
+        assertEquals("Max", t1.vorname());
+        assertEquals("Erika", t2.vorname());
+
+        assertEquals("Mustermann", t1.nachname());
+        assertEquals("Musterfrau", t2.nachname());
+
+        assertEquals("max@example.com", t1.email());
+        assertEquals("erika@example.com", t2.email());
+    }
+
+    @Test
+    void testThrowsExceptionWhenListLengthsAreInconsistent() {
+        ZLSOSTEVASYSRFC trainingData = createData(
+                "11; 22",
+                "1", // inconsistent → only 1 value
+                "Dr.; Prof.",
+                "Max; Erika",
+                "Mustermann; Musterfrau",
+                "max@example.com; erika@example.com");
+
+        assertThrows(EvaSysException.class, () -> evaSysClient.extractSecondaryTrainers(trainingData));
     }
 
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenUpdatingSecondaryTrainer() throws Exception {
-        ZLSOSTEVASYSRFC secTrainerData = new ZLSOSTEVASYSRFC();
-        secTrainerData.setSEKTRAINERID("2");
-        secTrainerData.setSEKTRAINERTITEL("Prof.");
-        secTrainerData.setSEKTRAINERVNAME("Anna");
-        secTrainerData.setSEKTRAINERNNAME("Musterfrau");
-        secTrainerData.setSEKTRAINERMAIL("anna@example.com");
-        secTrainerData.setTEILBEREICHID("1");
-        secTrainerData.setTRAINERGESCHL("2");
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTEILBEREICHID("1");
+
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
 
         User mockedUser = new User();
         mockedUser.setMNId(22);
@@ -298,7 +358,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evaSysClient.updateSecondaryTrainer(secTrainerData);
+        evaSysClient.updateSecondaryTrainer(trainingData, secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -309,25 +369,27 @@ public class EvaSysClientTest {
         assertEquals(22, captured.getMNId());
         assertEquals("2", captured.getMSExternalId());
         assertEquals("Prof.", captured.getMSTitle());
-        assertEquals("Anna", captured.getMSFirstName());
+        assertEquals("Erika", captured.getMSFirstName());
         assertEquals("Musterfrau", captured.getMSSurName());
-        assertEquals("anna@example.com", captured.getMSEmail());
+        assertEquals("erika@example.com", captured.getMSEmail());
         assertEquals(1, captured.getMNFbid());
         assertEquals(2, captured.getMNAddressId());
     }
 
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenInsertingSecondaryTrainer() throws Exception {
-        ZLSOSTEVASYSRFC secTrainerData = new ZLSOSTEVASYSRFC();
-        secTrainerData.setSEKTRAINERID("2");
-        secTrainerData.setSEKTRAINERTITEL("Prof.");
-        secTrainerData.setSEKTRAINERVNAME("Anna");
-        secTrainerData.setSEKTRAINERNNAME("Musterfrau");
-        secTrainerData.setSEKTRAINERMAIL("anna@example.com");
-        secTrainerData.setTEILBEREICHID("1");
-        secTrainerData.setTRAINERGESCHL("2");
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTEILBEREICHID("1");
 
-        evaSysClient.insertSecondaryTrainer(secTrainerData);
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
+
+        evaSysClient.insertSecondaryTrainer(trainingData, secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -337,9 +399,9 @@ public class EvaSysClientTest {
 
         assertEquals("2", captured.getMSExternalId());
         assertEquals("Prof.", captured.getMSTitle());
-        assertEquals("Anna", captured.getMSFirstName());
+        assertEquals("Erika", captured.getMSFirstName());
         assertEquals("Musterfrau", captured.getMSSurName());
-        assertEquals("anna@example.com", captured.getMSEmail());
+        assertEquals("erika@example.com", captured.getMSEmail());
         assertEquals(1, captured.getMNFbid());
         assertEquals(2, captured.getMNAddressId());
     }

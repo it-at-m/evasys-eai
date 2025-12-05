@@ -2,6 +2,7 @@ package de.muenchen.evasys.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC.ITEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
+import de.muenchen.evasys.configuration.EvaSysException;
 import de.muenchen.evasys.dto.SecondaryTrainer;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,11 +26,14 @@ public class TrainingProcessorServiceTest {
     @Mock
     private EvaSysService evaSysMockService;
 
+    @Mock
+    private MailNotificationService mailNotificationService;
+
     private TrainingProcessorService trainingProcessorService;
 
     @BeforeEach
     public void setup() {
-        trainingProcessorService = new TrainingProcessorService(evaSysMockService);
+        trainingProcessorService = new TrainingProcessorService(evaSysMockService, mailNotificationService);
     }
 
     private ZLSOSTEVASYSRFC createTrainingData(String trainerId, String subunitId, String courseId) {
@@ -184,5 +189,38 @@ public class TrainingProcessorServiceTest {
         verify(evaSysMockService, times(2)).insertTrainer(any());
         verify(evaSysMockService, never()).updateCourse(any());
         verify(evaSysMockService, times(2)).insertCourse(any());
+    }
+
+    @Test
+    public void testThatNotifyErrorIsCalledWhenTrainerProcessingFails() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenThrow(new EvaSysException("Trainer error"));
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(mailNotificationService, times(1)).notifyError(
+                eq("Trainer processing failed"),
+                eq("Trainer error"),
+                any(EvaSysException.class),
+                eq(trainingData));
+    }
+
+    @Test
+    public void testNotifyErrorIsCalledWhenCourseProcessingFails() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(true);
+        when(evaSysMockService.courseExists(anyInt())).thenThrow(new EvaSysException("Course error"));
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(mailNotificationService, times(1)).notifyError(
+                eq("Course processing failed"),
+                eq("Course error"),
+                any(EvaSysException.class),
+                eq(trainingData));
     }
 }

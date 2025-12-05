@@ -14,10 +14,13 @@ public class TrainingProcessorService {
 
     private final EvaSysService evaSysService;
 
+    private final MailNotificationService mailNotificationService;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TrainingProcessorService.class);
 
-    public TrainingProcessorService(final EvaSysService evaSysService) {
+    public TrainingProcessorService(final EvaSysService evaSysService, final MailNotificationService mailNotificationService) {
         this.evaSysService = evaSysService;
+        this.mailNotificationService = mailNotificationService;
     }
 
     public void processTrainingRequest(final ZLSOEVASYSRFC trainingRequest) {
@@ -27,12 +30,14 @@ public class TrainingProcessorService {
                 processTrainer(trainingData);
             } catch (EvaSysException e) {
                 LOGGER.error("Trainer processing failed: {}", e.getMessage());
+                mailNotificationService.notifyError("Trainer processing failed", e.getMessage(), e, trainingData);
             }
 
             try {
                 processCourse(trainingData);
             } catch (EvaSysException e) {
                 LOGGER.error("Course processing failed: {}", e.getMessage());
+                mailNotificationService.notifyError("Course processing failed", e.getMessage(), e, trainingData);
             }
         }
         LOGGER.info("All training requests processed");

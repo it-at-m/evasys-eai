@@ -18,6 +18,12 @@ spring:
     name: @project.artifactId@
     group: @project.groupId@
     version: @project.version@
+  mail:
+    host: null
+    port: 0
+    username: null
+    password: null
+    test-connection: false
 
 server:
   error:

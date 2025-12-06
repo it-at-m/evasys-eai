@@ -28,7 +28,7 @@ public class EvaSysService {
     }
 
     public List<SecondaryTrainer> extractSecondaryTrainers(final ZLSOSTEVASYSRFC trainingData) {
-        return client.extractSecondaryTrainers(trainingData);
+        return SecondaryTrainer.fromTrainingData(trainingData);
     }
 
     public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {

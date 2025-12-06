@@ -114,7 +114,7 @@ public class EvaSysClient {
             updatedTrainer.setMNId(foundUser.getMNId());
             final Holder<User> userHolder = new Holder<>(updatedTrainer);
             soapPort.updateUser(userHolder);
-            LOGGER.info("Trainer with ID {} sucessfully updated", trainingData.getTRAINER1ID());
+            LOGGER.info("Trainer with ID {} successfully updated", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while updating trainer", e);
         } catch (Exception e) {

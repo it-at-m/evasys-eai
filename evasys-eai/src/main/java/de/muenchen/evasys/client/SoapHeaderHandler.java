@@ -1,4 +1,4 @@
-package de.muenchen.evasys.soap;
+package de.muenchen.evasys.client;
 
 import jakarta.xml.soap.SOAPElement;
 import jakarta.xml.soap.SOAPEnvelope;

@@ -1,4 +1,4 @@
-package de.muenchen.evasys.configuration;
+package de.muenchen.evasys.exception;
 
 @SuppressWarnings("serial")
 public class EvaSysException extends RuntimeException {

@@ -2,7 +2,7 @@ package de.muenchen.evasys.service;
 
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.client.EvaSysClient;
-import de.muenchen.evasys.dto.SecondaryTrainer;
+import de.muenchen.evasys.model.SecondaryTrainer;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +28,7 @@ public class EvaSysService {
     }
 
     public List<SecondaryTrainer> extractSecondaryTrainers(final ZLSOSTEVASYSRFC trainingData) {
-        return client.extractSecondaryTrainers(trainingData);
+        return SecondaryTrainer.fromTrainingData(trainingData);
     }
 
     public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {

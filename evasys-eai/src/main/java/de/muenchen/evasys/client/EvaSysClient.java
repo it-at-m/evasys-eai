@@ -4,16 +4,13 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.EvaSysException;
-import de.muenchen.evasys.configuration.EvaSysProperties;
 import de.muenchen.evasys.dto.SecondaryTrainer;
-import de.muenchen.evasys.soap.SoapPortFactory;
 import jakarta.xml.ws.Holder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
@@ -31,16 +28,7 @@ public class EvaSysClient {
 
     private final SoapPort soapPort;
 
-    @Autowired
-    public EvaSysClient(final EvaSysProperties props) {
-        this.soapPort = SoapPortFactory.createPort(
-                props.uri(),
-                props.username(),
-                props.password());
-    }
-
-    // Test constructor
-    protected EvaSysClient(EvaSysProperties props, final SoapPort soapPort) {
+    public EvaSysClient(final SoapPort soapPort) {
         this.soapPort = soapPort;
     }
 

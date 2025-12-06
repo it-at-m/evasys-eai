@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.EvaSysException;
-import de.muenchen.evasys.configuration.EvaSysProperties;
 import de.muenchen.evasys.dto.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import java.util.List;
@@ -44,12 +43,9 @@ public class EvaSysClientTest {
 
     private EvaSysClient evaSysClient;
 
-    private EvaSysProperties evaSysProperties;
-
     @BeforeEach
     public void setup() {
-        evaSysProperties = new EvaSysProperties("http://dummy", "user", "password");
-        evaSysClient = new EvaSysClient(evaSysProperties, soapPortMock);
+        evaSysClient = new EvaSysClient(soapPortMock);
     }
 
     private ZLSOSTEVASYSRFC createData(

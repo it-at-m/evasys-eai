@@ -2,8 +2,8 @@ package de.muenchen.evasys.service;
 
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.dto.SecondaryTrainer;
 import de.muenchen.evasys.exception.EvaSysException;
+import de.muenchen.evasys.model.SecondaryTrainer;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

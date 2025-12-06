@@ -92,6 +92,13 @@
             <version>${cxf.xjc.version}</version>
         </dependency>
 
+        <!-- Required for Mapping from SAP to EvaSys -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.6.3</version> 
+        </dependency>
+
         <!-- CXF-Starter -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -226,6 +233,11 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.6.3</version>
                         </path>
                     </annotationProcessorPaths>
                     <showDeprecation>true</showDeprecation>

@@ -45,8 +45,8 @@ public interface SapEvaSysMapper {
     Course mapToCourse(ZLSOSTEVASYSRFC trainingData);
 
     @AfterMapping
-    default void buildCustomFieldsJson(ZLSOSTEVASYSRFC source, @MappingTarget Course target) {
-        ObjectNode json = JsonNodeFactory.instance.objectNode();
+    default void buildCustomFieldsJson(final ZLSOSTEVASYSRFC source, @MappingTarget final Course target) {
+        final ObjectNode json = JsonNodeFactory.instance.objectNode();
         json.put("1", source.getTRAINERGESCHL());
         json.put("2", source.getTRAINEROBJTYP());
         json.put("3", source.getFIRMA());

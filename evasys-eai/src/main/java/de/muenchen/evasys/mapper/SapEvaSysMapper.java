@@ -1,9 +1,13 @@
 package de.muenchen.evasys.mapper;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.model.SecondaryTrainer;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.User;
@@ -39,4 +43,22 @@ public interface SapEvaSysMapper {
     @Mapping(source = "TRAININGTNANZAHL", target = "MNCountStud")
     @Mapping(source = "TEILBEREICHID", target = "MNFbid")
     Course mapToCourse(ZLSOSTEVASYSRFC trainingData);
+
+    @AfterMapping
+    default void buildCustomFieldsJson(ZLSOSTEVASYSRFC source, @MappingTarget Course target) {
+        ObjectNode json = JsonNodeFactory.instance.objectNode();
+        json.put("1", source.getTRAINERGESCHL());
+        json.put("2", source.getTRAINEROBJTYP());
+        json.put("3", source.getFIRMA());
+        json.put("4", ""); // always empty
+        json.put("5", ""); // always empty
+        json.put("6", source.getTEILBEREICHID());
+        json.put("7", source.getTRAININGBEGINN());
+        json.put("8", source.getTRAININGENDE());
+        json.put("9", String.join(" ", source.getVAVNAME(), source.getVANNAME()));
+        json.put("10", String.join(" ", source.getSBVNAME(), source.getSBNNAME()));
+        json.put("11", source.getTRAININGDAUERTAGE());
+        json.put("12", source.getTRAININGDAUERSTD());
+        target.setMSCustomFieldsJSON(json.toString());
+    }
 }

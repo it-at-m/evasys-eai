@@ -1,7 +1,5 @@
 package de.muenchen.evasys.client;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.exception.EvaSysException;
 import de.muenchen.evasys.mapper.SapEvaSysMapper;
@@ -226,10 +224,8 @@ public class EvaSysClient {
             final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
             final Course foundCourse = getCourse(Integer.parseInt(trainingData.getTRAININGID()));
             final Course updatedCourse = mapper.mapToCourse(trainingData);
-            final ObjectNode json = buildCourseJson(trainingData);
 
             updatedCourse.setMNCourseId(foundCourse.getMNCourseId());
-            updatedCourse.setMSCustomFieldsJSON(json.toString());
             updatedCourse.setMNUserId(foundUser.getMNId());
 
             final Holder<Course> courseHolder = new Holder<>(updatedCourse);
@@ -247,9 +243,7 @@ public class EvaSysClient {
         try {
             final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
             final Course newCourse = mapper.mapToCourse(trainingData);
-            final ObjectNode json = buildCourseJson(trainingData);
 
-            newCourse.setMSCustomFieldsJSON(json.toString());
             newCourse.setMNUserId(foundUser.getMNId());
 
             soapPort.insertCourse(newCourse);
@@ -259,22 +253,5 @@ public class EvaSysClient {
         } catch (Exception e) {
             throw new EvaSysException("Unexpected error while inserting course", e);
         }
-    }
-
-    private ObjectNode buildCourseJson(final ZLSOSTEVASYSRFC trainingData) {
-        final ObjectNode json = JsonNodeFactory.instance.objectNode();
-        json.put("1", trainingData.getTRAINERGESCHL());
-        json.put("2", trainingData.getTRAINEROBJTYP());
-        json.put("3", trainingData.getFIRMA());
-        json.put("4", ""); // always empty
-        json.put("5", ""); // always empty
-        json.put("6", trainingData.getTEILBEREICHID());
-        json.put("7", trainingData.getTRAININGBEGINN());
-        json.put("8", trainingData.getTRAININGENDE());
-        json.put("9", String.join(" ", trainingData.getVAVNAME(), trainingData.getVANNAME()));
-        json.put("10", String.join(" ", trainingData.getSBVNAME(), trainingData.getSBNNAME()));
-        json.put("11", trainingData.getTRAININGDAUERTAGE());
-        json.put("12", trainingData.getTRAININGDAUERSTD());
-        return json;
     }
 }

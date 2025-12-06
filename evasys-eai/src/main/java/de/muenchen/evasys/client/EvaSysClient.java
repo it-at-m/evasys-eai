@@ -5,8 +5,6 @@ import de.muenchen.evasys.exception.EvaSysException;
 import de.muenchen.evasys.mapper.SapEvaSysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,45 +134,6 @@ public class EvaSysClient {
         } catch (Exception e) {
             throw new EvaSysException("Unexpected error while inserting trainer", e);
         }
-    }
-
-    public List<SecondaryTrainer> extractSecondaryTrainers(final ZLSOSTEVASYSRFC trainingData) {
-
-        if (trainingData.getSEKTRAINERID() == null || trainingData.getSEKTRAINERID().isBlank()) {
-            return List.of();
-        }
-
-        final List<String> ids = split(trainingData.getSEKTRAINERID());
-        final List<String> anreden = split(trainingData.getSEKTRAINERANREDE());
-        final List<String> titel = split(trainingData.getSEKTRAINERTITEL());
-        final List<String> firstNames = split(trainingData.getSEKTRAINERVNAME());
-        final List<String> lastNames = split(trainingData.getSEKTRAINERNNAME());
-        final List<String> emails = split(trainingData.getSEKTRAINERMAIL());
-
-        final int size = ids.size();
-
-        if (List.of(anreden, titel, firstNames, lastNames, emails)
-                .stream().anyMatch(list -> list.size() != size)) {
-            throw new EvaSysException("Secondary trainer lists have inconsistent length", null);
-        }
-
-        final List<SecondaryTrainer> trainers = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            trainers.add(new SecondaryTrainer(
-                    ids.get(i),
-                    anreden.get(i),
-                    titel.get(i),
-                    firstNames.get(i),
-                    lastNames.get(i),
-                    emails.get(i)));
-        }
-        return trainers;
-    }
-
-    private static List<String> split(final String str) {
-        return Arrays.stream(str.split(";"))
-                .map(String::trim)
-                .toList();
     }
 
     public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {

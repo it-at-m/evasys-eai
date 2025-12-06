@@ -3,8 +3,9 @@ package de.muenchen.evasys.client;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.dto.SecondaryTrainer;
 import de.muenchen.evasys.exception.EvaSysException;
+import de.muenchen.evasys.mapper.SapEvaSysMapper;
+import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +29,11 @@ public class EvaSysClient {
 
     private final SoapPort soapPort;
 
-    public EvaSysClient(final SoapPort soapPort) {
+    private final SapEvaSysMapper mapper;
+
+    public EvaSysClient(final SoapPort soapPort, final SapEvaSysMapper mapper) {
         this.soapPort = soapPort;
+        this.mapper = mapper;
     }
 
     public UnitList getSubunits() {
@@ -110,17 +114,9 @@ public class EvaSysClient {
         LOGGER.info("Updating trainer data...");
         try {
             final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
-            final User updatedUser = new User();
-            updatedUser.setMNType(1);
-            updatedUser.setMNId(foundUser.getMNId());
-            updatedUser.setMSExternalId(trainingData.getTRAINER1ID());
-            updatedUser.setMSTitle(trainingData.getTRAINER1TITEL());
-            updatedUser.setMSFirstName(trainingData.getTRAINER1VNAME());
-            updatedUser.setMSSurName(trainingData.getTRAINER1NNAME());
-            updatedUser.setMSEmail(trainingData.getTRAINER1MAIL());
-            updatedUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
-            updatedUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
-            final Holder<User> userHolder = new Holder<>(updatedUser);
+            final User updatedTrainer = mapper.mapToTrainer(trainingData);
+            updatedTrainer.setMNId(foundUser.getMNId());
+            final Holder<User> userHolder = new Holder<>(updatedTrainer);
             soapPort.updateUser(userHolder);
             LOGGER.info("Trainer with ID {} sucessfully updated", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
@@ -133,16 +129,8 @@ public class EvaSysClient {
     public void insertTrainer(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Inserting new trainer...");
         try {
-            final User newUser = new User();
-            newUser.setMNType(1); // always constant (1 = Trainer)
-            newUser.setMSExternalId(trainingData.getTRAINER1ID());
-            newUser.setMSTitle(trainingData.getTRAINER1TITEL());
-            newUser.setMSFirstName(trainingData.getTRAINER1VNAME());
-            newUser.setMSSurName(trainingData.getTRAINER1NNAME());
-            newUser.setMSEmail(trainingData.getTRAINER1MAIL());
-            newUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
-            newUser.setMNAddressId(Integer.parseInt(trainingData.getTRAINERGESCHL()));
-            final Holder<User> userHolder = new Holder<>(newUser);
+            final User newTrainer = mapper.mapToTrainer(trainingData);
+            final Holder<User> userHolder = new Holder<>(newTrainer);
             soapPort.insertUser(userHolder);
             LOGGER.info("Trainer with ID {} sucessfully inserted", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
@@ -194,18 +182,10 @@ public class EvaSysClient {
     public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
         LOGGER.info("Inserting new secondary trainer...");
         try {
-            final User newUser = new User();
-            newUser.setMNType(1);
-            newUser.setMSExternalId(secondaryTrainer.id());
-            newUser.setMSTitle(secondaryTrainer.titel());
-            newUser.setMSFirstName(secondaryTrainer.vorname());
-            newUser.setMSSurName(secondaryTrainer.nachname());
-            newUser.setMSEmail(secondaryTrainer.email());
-            newUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
-            newUser.setMNAddressId(Integer.parseInt(secondaryTrainer.anrede()));
+            final User newUser = mapper.mapToSecondaryTrainer(secondaryTrainer, trainingData);
             final Holder<User> userHolder = new Holder<>(newUser);
             soapPort.insertUser(userHolder);
-            LOGGER.info("Secondary trainer with ID {} successfully inserted", trainingData.getSEKTRAINERID());
+            LOGGER.info("Secondary trainer with ID {} successfully inserted", secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while inserting secondary trainer", e);
         } catch (Exception e) {
@@ -217,16 +197,8 @@ public class EvaSysClient {
         LOGGER.info("Updating secondary trainer data...");
         try {
             final User foundUser = getUser(Integer.parseInt(secondaryTrainer.id()));
-            final User updatedUser = new User();
-            updatedUser.setMNType(1);
+            final User updatedUser = mapper.mapToSecondaryTrainer(secondaryTrainer, trainingData);
             updatedUser.setMNId(foundUser.getMNId());
-            updatedUser.setMSExternalId(secondaryTrainer.id());
-            updatedUser.setMSTitle(secondaryTrainer.titel());
-            updatedUser.setMSFirstName(secondaryTrainer.vorname());
-            updatedUser.setMSSurName(secondaryTrainer.nachname());
-            updatedUser.setMSEmail(secondaryTrainer.email());
-            updatedUser.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
-            updatedUser.setMNAddressId(Integer.parseInt(secondaryTrainer.anrede()));
             final Holder<User> userHolder = new Holder<>(updatedUser);
             soapPort.updateUser(userHolder);
             LOGGER.info("Secondary trainer with ID {} successfully updated", secondaryTrainer.id());
@@ -253,15 +225,12 @@ public class EvaSysClient {
         try {
             final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
             final Course foundCourse = getCourse(Integer.parseInt(trainingData.getTRAININGID()));
-            final Course updatedCourse = new Course();
+            final Course updatedCourse = mapper.mapToCourse(trainingData);
             final ObjectNode json = buildCourseJson(trainingData);
 
             updatedCourse.setMNCourseId(foundCourse.getMNCourseId());
-            updatedCourse.setMNCourseType(Integer.parseInt(trainingData.getTRAININGART()));
-            updatedCourse.setMSPubCourseId(trainingData.getTRAININGID());
             updatedCourse.setMSCustomFieldsJSON(json.toString());
             updatedCourse.setMNUserId(foundUser.getMNId());
-            updatedCourse.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
 
             final Holder<Course> courseHolder = new Holder<>(updatedCourse);
             soapPort.updateCourse(courseHolder, false);
@@ -277,19 +246,11 @@ public class EvaSysClient {
         LOGGER.info("Inserting new course...");
         try {
             final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
-            final Course newCourse = new Course();
+            final Course newCourse = mapper.mapToCourse(trainingData);
             final ObjectNode json = buildCourseJson(trainingData);
 
-            newCourse.setMNCourseId(Integer.parseInt(trainingData.getTRAININGID()));
-            newCourse.setMSProgramOfStudy(trainingData.getTRAININGSTYPKUERZEL());
-            newCourse.setMSCourseTitle(trainingData.getTRAININGTITEL());
-            newCourse.setMSRoom(trainingData.getTRAININGRAUM());
-            newCourse.setMNCourseType(Integer.parseInt(trainingData.getTRAININGART()));
-            newCourse.setMSPubCourseId(trainingData.getTRAININGID());
-            newCourse.setMNCountStud(Integer.parseInt(trainingData.getTRAININGTNANZAHL()));
             newCourse.setMSCustomFieldsJSON(json.toString());
             newCourse.setMNUserId(foundUser.getMNId());
-            newCourse.setMNFbid(Integer.parseInt(trainingData.getTEILBEREICHID()));
 
             soapPort.insertCourse(newCourse);
             LOGGER.info("Course with ID {} sucessfully inserted", trainingData.getTRAININGID());

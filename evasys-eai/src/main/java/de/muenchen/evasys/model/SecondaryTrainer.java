@@ -1,4 +1,4 @@
-package de.muenchen.evasys.dto;
+package de.muenchen.evasys.model;
 
 public record SecondaryTrainer(
         String id,

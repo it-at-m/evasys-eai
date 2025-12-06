@@ -14,14 +14,16 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.dto.SecondaryTrainer;
 import de.muenchen.evasys.exception.EvaSysException;
+import de.muenchen.evasys.mapper.SapEvaSysMapper;
+import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,11 +43,13 @@ public class EvaSysClientTest {
     @Mock
     private SoapPort soapPortMock;
 
+    private final SapEvaSysMapper mapper = Mappers.getMapper(SapEvaSysMapper.class);
+
     private EvaSysClient evaSysClient;
 
     @BeforeEach
     public void setup() {
-        evaSysClient = new EvaSysClient(soapPortMock);
+        evaSysClient = new EvaSysClient(soapPortMock, mapper);
     }
 
     private ZLSOSTEVASYSRFC createData(

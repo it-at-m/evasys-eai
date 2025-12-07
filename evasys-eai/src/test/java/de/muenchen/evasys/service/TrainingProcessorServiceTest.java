@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC.ITEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.exception.EvaSysException;
+import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class TrainingProcessorServiceTest {
 
     @Mock
-    private EvaSysService evaSysMockService;
+    private EvasysService evasysMockService;
 
     @Mock
     private MailNotificationService mailNotificationService;
@@ -33,7 +33,7 @@ public class TrainingProcessorServiceTest {
 
     @BeforeEach
     public void setup() {
-        trainingProcessorService = new TrainingProcessorService(evaSysMockService, mailNotificationService);
+        trainingProcessorService = new TrainingProcessorService(evasysMockService, mailNotificationService);
     }
 
     private ZLSOSTEVASYSRFC createTrainingData(String trainerId, String subunitId, String courseId) {
@@ -57,12 +57,12 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(true);
+        when(evasysMockService.trainerExists(anyInt(), anyInt())).thenReturn(true);
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, times(1)).updateTrainer(trainingData);
-        verify(evaSysMockService, never()).insertTrainer(trainingData);
+        verify(evasysMockService, times(1)).updateTrainer(trainingData);
+        verify(evasysMockService, never()).insertTrainer(trainingData);
     }
 
     @Test
@@ -70,12 +70,12 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(false);
+        when(evasysMockService.trainerExists(anyInt(), anyInt())).thenReturn(false);
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateTrainer(trainingData);
-        verify(evaSysMockService, times(1)).insertTrainer(trainingData);
+        verify(evasysMockService, never()).updateTrainer(trainingData);
+        verify(evasysMockService, times(1)).insertTrainer(trainingData);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class TrainingProcessorServiceTest {
         trainingData.setSEKTRAINERID("2");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
+        when(evasysMockService.trainerExists(1, 1)).thenReturn(true);
 
         SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
                 "2",
@@ -94,15 +94,15 @@ public class TrainingProcessorServiceTest {
                 "Musterfrau",
                 "erika@example.com");
 
-        when(evaSysMockService.trainerExists(2, 1)).thenReturn(true);
+        when(evasysMockService.trainerExists(2, 1)).thenReturn(true);
 
-        when(evaSysMockService.extractSecondaryTrainers(trainingData))
+        when(evasysMockService.extractSecondaryTrainers(trainingData))
                 .thenReturn(List.of(secondaryTrainer));
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, times(1)).updateSecondaryTrainer(trainingData, secondaryTrainer);
-        verify(evaSysMockService, never()).insertSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evasysMockService, times(1)).updateSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evasysMockService, never()).insertSecondaryTrainer(trainingData, secondaryTrainer);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class TrainingProcessorServiceTest {
         trainingData.setSEKTRAINERID("2");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
+        when(evasysMockService.trainerExists(1, 1)).thenReturn(true);
 
         SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
                 "2",
@@ -121,15 +121,15 @@ public class TrainingProcessorServiceTest {
                 "Musterfrau",
                 "erika@example.com");
 
-        when(evaSysMockService.trainerExists(2, 1)).thenReturn(false);
+        when(evasysMockService.trainerExists(2, 1)).thenReturn(false);
 
-        when(evaSysMockService.extractSecondaryTrainers(trainingData))
+        when(evasysMockService.extractSecondaryTrainers(trainingData))
                 .thenReturn(List.of(secondaryTrainer));
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateSecondaryTrainer(trainingData, secondaryTrainer);
-        verify(evaSysMockService, times(1)).insertSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evasysMockService, never()).updateSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evasysMockService, times(1)).insertSecondaryTrainer(trainingData, secondaryTrainer);
     }
 
     @Test
@@ -138,14 +138,14 @@ public class TrainingProcessorServiceTest {
         trainingData.setSEKTRAINERID(null);
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(1, 1)).thenReturn(true);
+        when(evasysMockService.trainerExists(1, 1)).thenReturn(true);
 
-        when(evaSysMockService.extractSecondaryTrainers(trainingData)).thenReturn(List.of());
+        when(evasysMockService.extractSecondaryTrainers(trainingData)).thenReturn(List.of());
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateSecondaryTrainer(any(), any());
-        verify(evaSysMockService, never()).insertSecondaryTrainer(any(), any());
+        verify(evasysMockService, never()).updateSecondaryTrainer(any(), any());
+        verify(evasysMockService, never()).insertSecondaryTrainer(any(), any());
     }
 
     @Test
@@ -153,12 +153,12 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.courseExists(anyInt())).thenReturn(true);
+        when(evasysMockService.courseExists(anyInt())).thenReturn(true);
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, times(1)).updateCourse(trainingData);
-        verify(evaSysMockService, never()).insertCourse(trainingData);
+        verify(evasysMockService, times(1)).updateCourse(trainingData);
+        verify(evasysMockService, never()).insertCourse(trainingData);
     }
 
     @Test
@@ -166,12 +166,12 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.courseExists(anyInt())).thenReturn(false);
+        when(evasysMockService.courseExists(anyInt())).thenReturn(false);
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateCourse(trainingData);
-        verify(evaSysMockService, times(1)).insertCourse(trainingData);
+        verify(evasysMockService, never()).updateCourse(trainingData);
+        verify(evasysMockService, times(1)).insertCourse(trainingData);
     }
 
     @Test
@@ -180,15 +180,15 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData2 = createTrainingData("2", "2", "2");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData1, trainingData2);
 
-        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(false);
-        when(evaSysMockService.courseExists(anyInt())).thenReturn(false);
+        when(evasysMockService.trainerExists(anyInt(), anyInt())).thenReturn(false);
+        when(evasysMockService.courseExists(anyInt())).thenReturn(false);
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
-        verify(evaSysMockService, never()).updateTrainer(any());
-        verify(evaSysMockService, times(2)).insertTrainer(any());
-        verify(evaSysMockService, never()).updateCourse(any());
-        verify(evaSysMockService, times(2)).insertCourse(any());
+        verify(evasysMockService, never()).updateTrainer(any());
+        verify(evasysMockService, times(2)).insertTrainer(any());
+        verify(evasysMockService, never()).updateCourse(any());
+        verify(evasysMockService, times(2)).insertCourse(any());
     }
 
     @Test
@@ -196,14 +196,14 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenThrow(new EvaSysException("Trainer error"));
+        when(evasysMockService.trainerExists(anyInt(), anyInt())).thenThrow(new EvasysException("Trainer error"));
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
         verify(mailNotificationService, times(1)).notifyError(
                 eq("Trainer processing failed"),
                 eq("Trainer error"),
-                any(EvaSysException.class),
+                any(EvasysException.class),
                 eq(trainingData));
     }
 
@@ -212,15 +212,15 @@ public class TrainingProcessorServiceTest {
         ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
         ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
 
-        when(evaSysMockService.trainerExists(anyInt(), anyInt())).thenReturn(true);
-        when(evaSysMockService.courseExists(anyInt())).thenThrow(new EvaSysException("Course error"));
+        when(evasysMockService.trainerExists(anyInt(), anyInt())).thenReturn(true);
+        when(evasysMockService.courseExists(anyInt())).thenThrow(new EvasysException("Course error"));
 
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
         verify(mailNotificationService, times(1)).notifyError(
                 eq("Course processing failed"),
                 eq("Course error"),
-                any(EvaSysException.class),
+                any(EvasysException.class),
                 eq(trainingData));
     }
 }

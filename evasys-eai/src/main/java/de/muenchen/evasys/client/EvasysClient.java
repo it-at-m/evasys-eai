@@ -1,8 +1,8 @@
 package de.muenchen.evasys.client;
 
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.exception.EvaSysException;
-import de.muenchen.evasys.mapper.SapEvaSysMapper;
+import de.muenchen.evasys.exception.EvasysException;
+import de.muenchen.evasys.mapper.SapEvasysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import java.util.List;
@@ -19,15 +19,15 @@ import wsdl.soapserver_v100.UserIdType;
 import wsdl.soapserver_v100.UserList;
 
 @Component
-public class EvaSysClient {
+public class EvasysClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EvaSysClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EvasysClient.class);
 
     private final SoapPort soapPort;
 
-    private final SapEvaSysMapper mapper;
+    private final SapEvasysMapper mapper;
 
-    public EvaSysClient(final SoapPort soapPort, final SapEvaSysMapper mapper) {
+    public EvasysClient(final SoapPort soapPort, final SapEvasysMapper mapper) {
         this.soapPort = soapPort;
         this.mapper = mapper;
     }
@@ -37,9 +37,9 @@ public class EvaSysClient {
         try {
             return soapPort.getSubunits();
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while requesting subunits", e);
+            throw new EvasysException("SOAP error while requesting subunits", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while requesting subunits", e);
+            throw new EvasysException("Unexpected error while requesting subunits", e);
         }
     }
 
@@ -53,12 +53,12 @@ public class EvaSysClient {
             final String errorCode = e.getFaultInfo().getSErrorMessage();
             switch (errorCode) {
             case "ERR_305":
-                throw new EvaSysException("User not found for subunit", e);
+                throw new EvasysException("User not found for subunit", e);
             default:
-                throw new EvaSysException("SOAP error code:" + errorCode, e);
+                throw new EvasysException("SOAP error code:" + errorCode, e);
             }
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while requesting users by subunit", e);
+            throw new EvasysException("Unexpected error while requesting users by subunit", e);
         }
     }
 
@@ -69,9 +69,9 @@ public class EvaSysClient {
             final UserList userList = soapPort.getUserByIdConsiderExternalID(String.valueOf(externalUserId), userIdType, false, false, false, false);
             return userList.getUsers().getFirst();
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while requesting user data", e);
+            throw new EvasysException("SOAP error while requesting user data", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while requesting user data", e);
+            throw new EvasysException("Unexpected error while requesting user data", e);
         }
     }
 
@@ -87,10 +87,10 @@ public class EvaSysClient {
                 LOGGER.info("No course found for courseId {}", courseId);
                 return null;
             default:
-                throw new EvaSysException("SOAP error code:" + errorCode, e);
+                throw new EvasysException("SOAP error code:" + errorCode, e);
             }
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while requesting course data", e);
+            throw new EvasysException("Unexpected error while requesting course data", e);
         }
     }
 
@@ -116,9 +116,9 @@ public class EvaSysClient {
             soapPort.updateUser(userHolder);
             LOGGER.info("Trainer with ID {} successfully updated", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while updating trainer", e);
+            throw new EvasysException("SOAP error while updating trainer", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while updating trainer", e);
+            throw new EvasysException("Unexpected error while updating trainer", e);
         }
     }
 
@@ -130,9 +130,9 @@ public class EvaSysClient {
             soapPort.insertUser(userHolder);
             LOGGER.info("Trainer with ID {} successfully inserted", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while inserting trainer", e);
+            throw new EvasysException("SOAP error while inserting trainer", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while inserting trainer", e);
+            throw new EvasysException("Unexpected error while inserting trainer", e);
         }
     }
 
@@ -144,9 +144,9 @@ public class EvaSysClient {
             soapPort.insertUser(userHolder);
             LOGGER.info("Secondary trainer with ID {} successfully inserted", secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while inserting secondary trainer", e);
+            throw new EvasysException("SOAP error while inserting secondary trainer", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while inserting secondary trainer", e);
+            throw new EvasysException("Unexpected error while inserting secondary trainer", e);
         }
     }
 
@@ -160,9 +160,9 @@ public class EvaSysClient {
             soapPort.updateUser(userHolder);
             LOGGER.info("Secondary trainer with ID {} successfully updated", secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while updating secondary trainer", e);
+            throw new EvasysException("SOAP error while updating secondary trainer", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while updating secondary trainer", e);
+            throw new EvasysException("Unexpected error while updating secondary trainer", e);
         }
     }
 
@@ -191,9 +191,9 @@ public class EvaSysClient {
             soapPort.updateCourse(courseHolder, false);
             LOGGER.info("Course with ID {} successfully updated", trainingData.getTRAININGID());
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while updating course", e);
+            throw new EvasysException("SOAP error while updating course", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while updating course", e);
+            throw new EvasysException("Unexpected error while updating course", e);
         }
     }
 
@@ -208,9 +208,9 @@ public class EvaSysClient {
             soapPort.insertCourse(newCourse);
             LOGGER.info("Course with ID {} successfully inserted", trainingData.getTRAININGID());
         } catch (SoapfaultMessage e) {
-            throw new EvaSysException("SOAP error while inserting course", e);
+            throw new EvasysException("SOAP error while inserting course", e);
         } catch (Exception e) {
-            throw new EvaSysException("Unexpected error while inserting course", e);
+            throw new EvasysException("Unexpected error while inserting course", e);
         }
     }
 }

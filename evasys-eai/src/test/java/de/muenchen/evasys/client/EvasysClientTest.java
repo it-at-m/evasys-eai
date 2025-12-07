@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.mapper.SapEvaSysMapper;
+import de.muenchen.evasys.mapper.SapEvasysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import org.junit.jupiter.api.Assertions;
@@ -35,18 +35,18 @@ import wsdl.soapserver_v100.UserIdType;
 import wsdl.soapserver_v100.UserList;
 
 @ExtendWith(MockitoExtension.class)
-public class EvaSysClientTest {
+public class EvasysClientTest {
 
     @Mock
     private SoapPort soapPortMock;
 
-    private final SapEvaSysMapper mapper = Mappers.getMapper(SapEvaSysMapper.class);
+    private final SapEvasysMapper mapper = Mappers.getMapper(SapEvasysMapper.class);
 
-    private EvaSysClient evaSysClient;
+    private EvasysClient evasysClient;
 
     @BeforeEach
     public void setup() {
-        evaSysClient = new EvaSysClient(soapPortMock, mapper);
+        evasysClient = new EvasysClient(soapPortMock, mapper);
     }
 
     @Test
@@ -57,7 +57,7 @@ public class EvaSysClientTest {
 
         when(soapPortMock.getSubunits()).thenReturn(mockedResponse);
 
-        UnitList result = evaSysClient.getSubunits();
+        UnitList result = evasysClient.getSubunits();
 
         assertEquals(1, result.getUnits().size());
         assertEquals(mockedUnit, result.getUnits().getFirst());
@@ -77,7 +77,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        UserList result = evaSysClient.getUsersBySubunit(1);
+        UserList result = evasysClient.getUsersBySubunit(1);
 
         assertEquals(1, result.getUsers().size());
         assertEquals(mockedUser, result.getUsers().getFirst());
@@ -98,7 +98,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserList);
 
-        User result = evaSysClient.getUser(1);
+        User result = evasysClient.getUser(1);
 
         Assertions.assertEquals(mockedUser, result);
     }
@@ -116,7 +116,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourse);
 
-        Course result = evaSysClient.getCourse(1);
+        Course result = evasysClient.getCourse(1);
 
         assertEquals(mockedCourse, result);
     }
@@ -137,7 +137,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserList);
 
-        boolean result = evaSysClient.isTrainerExisting(trainerId, 1);
+        boolean result = evasysClient.isTrainerExisting(trainerId, 1);
 
         assertTrue(result);
     }
@@ -157,7 +157,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserList);
 
-        boolean result = evaSysClient.isTrainerExisting(trainerId, 1);
+        boolean result = evasysClient.isTrainerExisting(trainerId, 1);
 
         assertFalse(result);
     }
@@ -187,7 +187,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evaSysClient.updateTrainer(trainingData);
+        evasysClient.updateTrainer(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -216,7 +216,7 @@ public class EvaSysClientTest {
         trainingData.setTEILBEREICHID("1");
         trainingData.setTRAINERGESCHL("1");
 
-        evaSysClient.insertTrainer(trainingData);
+        evasysClient.insertTrainer(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -260,7 +260,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evaSysClient.updateSecondaryTrainer(trainingData, secondaryTrainer);
+        evasysClient.updateSecondaryTrainer(trainingData, secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -291,7 +291,7 @@ public class EvaSysClientTest {
                 "Musterfrau",
                 "erika@example.com");
 
-        evaSysClient.insertSecondaryTrainer(trainingData, secondaryTrainer);
+        evasysClient.insertSecondaryTrainer(trainingData, secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -321,7 +321,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourse);
 
-        boolean result = evaSysClient.isCourseExisting(courseId);
+        boolean result = evasysClient.isCourseExisting(courseId);
 
         assertTrue(result);
     }
@@ -337,7 +337,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(null);
 
-        boolean result = evaSysClient.isCourseExisting(courseId);
+        boolean result = evasysClient.isCourseExisting(courseId);
 
         assertFalse(result);
     }
@@ -385,7 +385,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourseResponse);
 
-        evaSysClient.updateCourse(trainingData);
+        evasysClient.updateCourse(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<Course>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -460,7 +460,7 @@ public class EvaSysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evaSysClient.insertCourse(trainingData);
+        evasysClient.insertCourse(trainingData);
 
         ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
         verify(soapPortMock).insertCourse(captor.capture());

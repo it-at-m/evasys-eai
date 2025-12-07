@@ -25,16 +25,16 @@
 [made-with-love-shield]: https://img.shields.io/badge/made%20with%20%E2%9D%A4%20by-it%40M-yellow?style=for-the-badge
 [license-shield]: https://img.shields.io/github/license/it-at-m/refarch-templates?style=for-the-badge
 
-# EvaSys-EAI
+# evasys EAI
 
 [![Documentation][documentation-shield]][documentation]
 [![New issue][new-issue-shield]][new-issue]
 [![Made with love by it@M][made-with-love-shield]][itm-opensource]
 [![GitHub license][license-shield]][license]
 
-This project provides an Enterprise Application Integration (EAI) solution for synchronizing course and trainer data between SAP Process Orchestration (SAP-PO) and EvaSys, a system used for managing evaluations and course information.
+This project provides an Enterprise Application Integration (EAI) solution for synchronizing course and trainer data between SAP Process Orchestration (SAP-PO) and evasys, a system used for managing evaluations and course information.
 
-The goal of this integration is to ensure that course and trainer data in EvaSys remain consistent and up-to-date with the source information managed in SAP-HR and transmitted via SAP-PO. The EAI acts as a middleware component that receives, processes, and synchronizes data through SOAP web service interactions.
+The goal of this integration is to ensure that course and trainer data in evasys remain consistent and up-to-date with the source information managed in SAP-HR and transmitted via SAP-PO. The EAI acts as a middleware component that receives, processes, and synchronizes data through SOAP web service interactions.
 
 ## Workflow
 
@@ -52,7 +52,7 @@ flowchart TD
   subgraph EAI
     D[Process items]
     E{"More items?"}
-    END((END</br>Courses & trainers</br>in EvaSys))
+    END((END</br>Courses & trainers</br>in evasys))
 
     P[Process primary trainer]
     S{Secondary</br>trainer</br>present?}
@@ -62,7 +62,7 @@ flowchart TD
     CC{Course exists?}
   end
 
-  subgraph EvaSys
+  subgraph evasys
     U[GetUsersBySubunit]
     I1[InsertTrainer]
     U1[UpdateTrainer]

@@ -1,17 +1,17 @@
 package de.muenchen.evasys.service;
 
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
-import de.muenchen.evasys.client.EvaSysClient;
+import de.muenchen.evasys.client.EvasysClient;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EvaSysService {
+public class EvasysService {
 
-    private final EvaSysClient client;
+    private final EvasysClient client;
 
-    public EvaSysService(final EvaSysClient client) {
+    public EvasysService(final EvasysClient client) {
         this.client = client;
     }
 

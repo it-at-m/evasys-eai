@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 
 @ConfigurationProperties(prefix = "evasys")
 @Validated
-public record EvaSysProperties(
+public record EvasysProperties(
         @NotBlank String uri,
         @NotBlank String username,
         @NotBlank String password,

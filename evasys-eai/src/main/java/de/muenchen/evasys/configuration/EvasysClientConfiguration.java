@@ -10,10 +10,10 @@ import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.Soapserver;
 
 @Configuration
-public class EvaSysClientConfiguration {
+public class EvasysClientConfiguration {
 
     @Bean
-    public SoapPort evaSysSoapPort(final EvaSysProperties props) {
+    public SoapPort evasysSoapPort(final EvasysProperties props) {
         final Soapserver service = new Soapserver();
         final SoapPort port = service.getSoapPort();
 

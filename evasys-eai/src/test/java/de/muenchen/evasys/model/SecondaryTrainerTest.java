@@ -114,4 +114,17 @@ class SecondaryTrainerTest {
 
         assertThrows(IllegalArgumentException.class, () -> SecondaryTrainer.fromTrainingData(trainingData));
     }
+
+    @Test
+    void testThrowsExceptionWhenFieldIsNull() {
+        ZLSOSTEVASYSRFC trainingData = createData(
+                "11; 22",
+                null, // null field should cause size mismatch
+                "Dr.; Prof.",
+                "Max; Erika",
+                "Mustermann; Musterfrau",
+                "max@example.com; erika@example.com");
+
+        assertThrows(IllegalArgumentException.class, () -> SecondaryTrainer.fromTrainingData(trainingData));
+    }
 }

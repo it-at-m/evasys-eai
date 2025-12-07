@@ -122,7 +122,7 @@ public class EvaSysClientTest {
     }
 
     @Test
-    public void testThatTrainerIsExisitingReturnsTrue() throws Exception {
+    public void testThatTrainerIsExistingReturnsTrue() throws Exception {
         int trainerId = 1;
         User mockedUser = new User();
         mockedUser.setMSExternalId(String.valueOf(trainerId));
@@ -143,7 +143,7 @@ public class EvaSysClientTest {
     }
 
     @Test
-    public void testThatTrainerIsNotExisitingReturnsFalse() throws Exception {
+    public void testThatTrainerIsNotExistingReturnsFalse() throws Exception {
         int trainerId = 1;
         User emptyUser = new User();
         UserList mockedUserList = new UserList();
@@ -309,7 +309,7 @@ public class EvaSysClientTest {
     }
 
     @Test
-    public void testThatCourseIsExisitingReturnsTrue() throws Exception {
+    public void testThatCourseIsExistingReturnsTrue() throws Exception {
         int courseId = 1;
         Course mockedCourse = new Course();
         mockedCourse.setMNCourseId(courseId);
@@ -327,7 +327,7 @@ public class EvaSysClientTest {
     }
 
     @Test
-    public void testThatCourseIsNotExisitingReturnsFalse() throws Exception {
+    public void testThatCourseIsNotExistingReturnsFalse() throws Exception {
         int courseId = 1;
 
         when(soapPortMock.getCourse(

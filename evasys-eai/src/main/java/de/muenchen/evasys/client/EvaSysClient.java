@@ -114,7 +114,7 @@ public class EvaSysClient {
             updatedTrainer.setMNId(foundUser.getMNId());
             final Holder<User> userHolder = new Holder<>(updatedTrainer);
             soapPort.updateUser(userHolder);
-            LOGGER.info("Trainer with ID {} sucessfully updated", trainingData.getTRAINER1ID());
+            LOGGER.info("Trainer with ID {} successfully updated", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while updating trainer", e);
         } catch (Exception e) {
@@ -128,7 +128,7 @@ public class EvaSysClient {
             final User newTrainer = mapper.mapToTrainer(trainingData);
             final Holder<User> userHolder = new Holder<>(newTrainer);
             soapPort.insertUser(userHolder);
-            LOGGER.info("Trainer with ID {} sucessfully inserted", trainingData.getTRAINER1ID());
+            LOGGER.info("Trainer with ID {} successfully inserted", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while inserting trainer", e);
         } catch (Exception e) {
@@ -206,7 +206,7 @@ public class EvaSysClient {
             newCourse.setMNUserId(foundUser.getMNId());
 
             soapPort.insertCourse(newCourse);
-            LOGGER.info("Course with ID {} sucessfully inserted", trainingData.getTRAININGID());
+            LOGGER.info("Course with ID {} successfully inserted", trainingData.getTRAININGID());
         } catch (SoapfaultMessage e) {
             throw new EvaSysException("SOAP error while inserting course", e);
         } catch (Exception e) {

@@ -66,6 +66,7 @@
 
         <!-- Utility -->
         <refarch-tools.version>1.2.0</refarch-tools.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
 
         <!-- Spotless P2 Mirror configuration (e.g. required when using company internal registry -->
         <p2.username /> <!-- must be empty, override via Maven settings.xml if needed -->
@@ -96,7 +97,7 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.6.3</version> 
+            <version>${mapstruct.version}</version>
         </dependency>
 
         <!-- CXF-Starter -->
@@ -237,7 +238,7 @@
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>1.6.3</version>
+                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <showDeprecation>true</showDeprecation>

@@ -13,7 +13,7 @@ import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.User;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface SapEvaSysMapper {
+public interface SapEvasysMapper {
 
     @Mapping(target = "MNType", constant = "1")
     @Mapping(source = "TRAINER1ID", target = "MSExternalId")

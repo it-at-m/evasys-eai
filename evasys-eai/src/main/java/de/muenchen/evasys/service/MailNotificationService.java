@@ -34,7 +34,7 @@ public class MailNotificationService {
 
             helper.setFrom(notificationProperties.from());
             helper.setTo(notificationProperties.recipients().toArray(String[]::new));
-            helper.setSubject("Fehler EvaSys-EAI");
+            helper.setSubject("Fehler evasys-EAI");
 
             final String stackTrace = throwable != null ? toStackTrace(throwable) : "keine Stacktrace verfügbar";
             final String requestStr = formatRequest(requestObj);

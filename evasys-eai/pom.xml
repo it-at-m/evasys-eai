@@ -15,7 +15,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <name>evasys-eai</name>
-    <description>EAI for synching data between SAP-PO and EvaSys</description>
+    <description>EAI for synching data between SAP-PO and evasys</description>
     <url>https://github.com/it-at-m/evasys-eai</url>
     <licenses>
         <license>
@@ -92,7 +92,7 @@
             <version>${cxf.xjc.version}</version>
         </dependency>
 
-        <!-- Required for Mapping from SAP to EvaSys -->
+        <!-- Required for Mapping from SAP to evasys -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>

@@ -50,8 +50,8 @@ public interface SapEvaSysMapper {
         json.put("1", source.getTRAINERGESCHL());
         json.put("2", source.getTRAINEROBJTYP());
         json.put("3", source.getFIRMA());
-        json.put("4", ""); // always empty
-        json.put("5", ""); // always empty
+        json.put("4", ""); // TODO: intentionally empty; clarification pending as to whether still needed
+        json.put("5", ""); // TODO: intentionally empty; clarification pending as to whether still needed
         json.put("6", source.getTEILBEREICHID());
         json.put("7", source.getTRAININGBEGINN());
         json.put("8", source.getTRAININGENDE());

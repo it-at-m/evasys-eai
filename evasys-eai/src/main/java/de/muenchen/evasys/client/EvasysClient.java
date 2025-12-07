@@ -22,7 +22,8 @@ import wsdl.soapserver_v100.UserList;
 public class EvasysClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EvasysClient.class);
-    private static final String ERR_USER_NOT_FOUND = "ERR_305";
+    private static final String ERR_USER_NOT_FOUND = "ERR_302";
+    private static final String ERR_NO_USERS_FOUND = "ERR_305";
     private static final String ERR_COURSE_NOT_FOUND = "ERR_312";
 
     private final SoapPort soapPort;
@@ -52,8 +53,8 @@ public class EvasysClient {
             return users;
         } catch (SoapfaultMessage e) {
             final String errorCode = e.getFaultInfo().getSErrorMessage();
-            if (ERR_USER_NOT_FOUND.equals(errorCode)) {
-                throw new EvasysException("User not found for subunit", e);
+            if (ERR_NO_USERS_FOUND.equals(errorCode)) {
+                throw new EvasysException("No users found in the given subunit", e);
             }
             throw new EvasysException("SOAP error code:" + errorCode, e);
         } catch (Exception e) {
@@ -68,7 +69,11 @@ public class EvasysClient {
             final UserList userList = soapPort.getUserByIdConsiderExternalID(String.valueOf(externalUserId), userIdType, false, false, false, false);
             return userList.getUsers().getFirst();
         } catch (SoapfaultMessage e) {
-            throw new EvasysException("SOAP error while requesting user data", e);
+            final String errorCode = e.getFaultInfo().getSErrorMessage();
+            if (ERR_USER_NOT_FOUND.equals(errorCode)) {
+                throw new EvasysException("No user found for the given id " + externalUserId, e);
+            }
+            throw new EvasysException("SOAP error code: " + errorCode, e);
         } catch (Exception e) {
             throw new EvasysException("Unexpected error while requesting user data", e);
         }
@@ -82,8 +87,7 @@ public class EvasysClient {
         } catch (SoapfaultMessage e) {
             final String errorCode = e.getFaultInfo().getSErrorMessage();
             if (ERR_COURSE_NOT_FOUND.equals(errorCode)) {
-                LOGGER.info("No course found for courseId {}", courseId);
-                return null;
+                throw new EvasysException("No course found for the given id " + courseId, e);
             }
             throw new EvasysException("SOAP error code:" + errorCode, e);
         } catch (Exception e) {

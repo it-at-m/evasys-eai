@@ -2,6 +2,8 @@ evasys:
   uri: null
   username: null
   password: null
+  connection-timeout: 10s
+  receive-timeout: 30s
 
 sappo:
   uri: null

@@ -19,8 +19,8 @@ public class EvaSysClientConfiguration {
 
         final BindingProvider bp = (BindingProvider) port;
         bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, props.uri());
-        bp.getRequestContext().put("jakarta.xml.ws.client.connectionTimeout", 10_000);
-        bp.getRequestContext().put("jakarta.xml.ws.client.receiveTimeout", 30_000);
+        bp.getRequestContext().put("jakarta.xml.ws.client.connectionTimeout", props.connectionTimeout().toMillis());
+        bp.getRequestContext().put("jakarta.xml.ws.client.receiveTimeout", props.receiveTimeout().toMillis());
 
         @SuppressWarnings("rawtypes")
         final List<Handler> handlers = bp.getBinding().getHandlerChain();

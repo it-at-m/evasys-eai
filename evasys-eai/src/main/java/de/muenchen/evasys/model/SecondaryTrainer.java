@@ -32,7 +32,7 @@ public record SecondaryTrainer(
             throw new IllegalArgumentException("Secondary trainer lists have inconsistent length");
         }
 
-        final List<SecondaryTrainer> trainers = new ArrayList<>();
+        final List<SecondaryTrainer> trainers = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             trainers.add(new SecondaryTrainer(
                     ids.get(i),

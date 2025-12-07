@@ -2,6 +2,7 @@ package de.muenchen.evasys.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
+import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.mapper.SapEvasysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
@@ -28,6 +30,8 @@ import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
 import wsdl.soapserver_v100.CourseList;
 import wsdl.soapserver_v100.SoapPort;
+import wsdl.soapserver_v100.SoapfaultMessage;
+import wsdl.soapserver_v100.TSoapfault;
 import wsdl.soapserver_v100.Unit;
 import wsdl.soapserver_v100.UnitList;
 import wsdl.soapserver_v100.User;
@@ -84,6 +88,25 @@ public class EvasysClientTest {
     }
 
     @Test
+    public void testGetUsersBySubunitThrowsExceptionWhenNoUsersFound() throws Exception {
+        TSoapfault faultresponse = new TSoapfault();
+        faultresponse.setSErrorMessage("ERR_305");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("No users found", faultresponse);
+
+        when(soapPortMock.getUsersBySubunit(
+                anyInt(),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenThrow(soapfaultMessage);
+
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getUsersBySubunit(1));
+
+        assertEquals("No users found in the given subunit", exception.getMessage());
+    }
+
+    @Test
     public void testGetUserReturnsUser() throws Exception {
         User mockedUser = new User();
         UserList mockedUserList = new UserList();
@@ -104,6 +127,28 @@ public class EvasysClientTest {
     }
 
     @Test
+    public void testGetUserThrowsExceptionWhenUserNotFound() throws Exception {
+        int userId = 999;
+
+        TSoapfault faultresponse = new TSoapfault();
+        faultresponse.setSErrorMessage("ERR_302");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("User not found", faultresponse);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                any(UserIdType.class),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenThrow(soapfaultMessage);
+
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getUser(userId));
+
+        assertEquals("No user found for the given id " + userId, exception.getMessage());
+    }
+
+    @Test
     public void testGetCourseReturnsCourse() throws Exception {
         Course mockedCourse = new Course();
         CourseList mockedCourseList = new CourseList();
@@ -119,6 +164,26 @@ public class EvasysClientTest {
         Course result = evasysClient.getCourse(1);
 
         assertEquals(mockedCourse, result);
+    }
+
+    @Test
+    public void testGetCourseThrowsExceptionWhenCourseNotFound() throws Exception {
+        int courseId = 999;
+
+        TSoapfault faultresponse = new TSoapfault();
+        faultresponse.setSErrorMessage("ERR_312");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Course not found", faultresponse);
+
+        when(soapPortMock.getCourse(
+                eq(String.valueOf(courseId)),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
+                .thenThrow(soapfaultMessage);
+
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getCourse(courseId));
+
+        assertEquals("No course found for the given id " + courseId, exception.getMessage());
     }
 
     @Test
@@ -330,12 +395,16 @@ public class EvasysClientTest {
     public void testThatCourseIsNotExistingReturnsFalse() throws Exception {
         int courseId = 1;
 
+        TSoapfault faultresponse = new TSoapfault();
+        faultresponse.setSErrorMessage("ERR_312");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Course not found", faultresponse);
+
         when(soapPortMock.getCourse(
                 eq(String.valueOf(courseId)),
                 eq(CourseIdType.PUBLIC),
                 eq(false),
                 eq(false)))
-                .thenReturn(null);
+                .thenThrow(soapfaultMessage);
 
         boolean result = evasysClient.isCourseExisting(courseId);
 

@@ -22,9 +22,10 @@ import wsdl.soapserver_v100.UserList;
 public class EvasysClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EvasysClient.class);
+    private static final String ERR_USER_NOT_FOUND = "ERR_305";
+    private static final String ERR_COURSE_NOT_FOUND = "ERR_312";
 
     private final SoapPort soapPort;
-
     private final SapEvasysMapper mapper;
 
     public EvasysClient(final SoapPort soapPort, final SapEvasysMapper mapper) {
@@ -51,12 +52,10 @@ public class EvasysClient {
             return users;
         } catch (SoapfaultMessage e) {
             final String errorCode = e.getFaultInfo().getSErrorMessage();
-            switch (errorCode) {
-            case "ERR_305":
+            if (ERR_USER_NOT_FOUND.equals(errorCode)) {
                 throw new EvasysException("User not found for subunit", e);
-            default:
-                throw new EvasysException("SOAP error code:" + errorCode, e);
             }
+            throw new EvasysException("SOAP error code:" + errorCode, e);
         } catch (Exception e) {
             throw new EvasysException("Unexpected error while requesting users by subunit", e);
         }
@@ -82,13 +81,11 @@ public class EvasysClient {
             return soapPort.getCourse(String.valueOf(courseId), courseIdType, false, false);
         } catch (SoapfaultMessage e) {
             final String errorCode = e.getFaultInfo().getSErrorMessage();
-            switch (errorCode) {
-            case "ERR_312":
+            if (ERR_COURSE_NOT_FOUND.equals(errorCode)) {
                 LOGGER.info("No course found for courseId {}", courseId);
                 return null;
-            default:
-                throw new EvasysException("SOAP error code:" + errorCode, e);
             }
+            throw new EvasysException("SOAP error code:" + errorCode, e);
         } catch (Exception e) {
             throw new EvasysException("Unexpected error while requesting course data", e);
         }

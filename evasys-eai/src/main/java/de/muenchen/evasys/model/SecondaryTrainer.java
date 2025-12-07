@@ -46,6 +46,9 @@ public record SecondaryTrainer(
     }
 
     private static List<String> split(final String str) {
+        if (str == null) {
+            return List.of();
+        }
         return Arrays.stream(str.split(";"))
                 .map(String::trim)
                 .toList();

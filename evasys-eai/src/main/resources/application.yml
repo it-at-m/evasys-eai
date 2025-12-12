@@ -4,6 +4,10 @@ evasys:
   password: null
   connection-timeout: 10s
   receive-timeout: 30s
+  notification:
+    from: null
+    recipients:
+      - null
 
 sappo:
   uri: null
@@ -26,6 +30,11 @@ spring:
     username: null
     password: null
     test-connection: false
+    properties:
+      smtp:
+        auth: false
+        starttls:
+          enable: false
 
 server:
   error:

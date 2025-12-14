@@ -12,15 +12,15 @@ flowchart LR
         HR[SAP-HR]
         PO[SAP-PO]
     end
-    
+
     subgraph EAI
         EP[SOAP Endpoint]
         PS[Processing Service]
         CL[evasys Client]
     end
-    
+
     EV[evasys]
-    
+
     HR --> PO
     PO -->|SOAP Request| EP
     EP --> PS
@@ -32,7 +32,7 @@ flowchart LR
 
 ### Package Structure
 
-```
+```bash
 de.muenchen.evasys
 ├── Application.java        # Spring Boot application entry point
 ├── client/                 # evasys SOAP client
@@ -60,14 +60,14 @@ de.muenchen.evasys
 
 ### Component Responsibilities
 
-| Component | Responsibility |
-|-----------|----------------|
-| `SapServiceEndpoint` | Receives SOAP requests from SAP-PO |
-| `TrainingProcessorService` | Orchestrates the synchronization workflow |
-| `EvasysService` | Provides high-level operations for trainer and course management |
-| `EvasysClient` | Low-level SOAP client for evasys API communication |
-| `SapEvasysMapper` | Maps SAP data structures to evasys formats |
-| `MailNotificationService` | Sends error notification emails |
+| Component                  | Responsibility                                                   |
+| -------------------------- | ---------------------------------------------------------------- |
+| `SapServiceEndpoint`       | Receives SOAP requests from SAP-PO                               |
+| `TrainingProcessorService` | Orchestrates the synchronization workflow                        |
+| `EvasysService`            | Provides high-level operations for trainer and course management |
+| `EvasysClient`             | Low-level SOAP client for evasys API communication               |
+| `SapEvasysMapper`          | Maps SAP data structures to evasys formats                       |
+| `MailNotificationService`  | Sends error notification emails                                  |
 
 ## Data Flow
 
@@ -130,7 +130,6 @@ flowchart TD
   CC -->|No| IC --> E
   CC -->|Yes| UC --> E
 ```
-
 
 ## Data Mapping
 

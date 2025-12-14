@@ -19,17 +19,17 @@ evasys:
   uri: https://evasys.example.com/evasys/soap.php
   username: api_user
   password: api_password
-  connection-timeout: 10s  # default
-  receive-timeout: 30s     # default
+  connection-timeout: 10s # default
+  receive-timeout: 30s # default
 ```
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `evasys.uri` | evasys SOAP API endpoint URL | *required* |
-| `evasys.username` | API username for authentication | *required* |
-| `evasys.password` | API password for authentication | *required* |
-| `evasys.connection-timeout` | Timeout for establishing connections | `10s` |
-| `evasys.receive-timeout` | Timeout for receiving responses | `30s` |
+| Property                    | Description                          | Default    |
+| --------------------------- | ------------------------------------ | ---------- |
+| `evasys.uri`                | evasys SOAP API endpoint URL         | _required_ |
+| `evasys.username`           | API username for authentication      | _required_ |
+| `evasys.password`           | API password for authentication      | _required_ |
+| `evasys.connection-timeout` | Timeout for establishing connections | `10s`      |
+| `evasys.receive-timeout`    | Timeout for receiving responses      | `30s`      |
 
 ### SAP-PO Connection
 
@@ -42,11 +42,11 @@ sappo:
   password: sappo_password
 ```
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `sappo.uri` | Base URI for the SOAP endpoint | *required* |
-| `sappo.username` | Username for SAP-PO authentication | *required* |
-| `sappo.password` | Password for SAP-PO authentication | *required* |
+| Property         | Description                        | Default    |
+| ---------------- | ---------------------------------- | ---------- |
+| `sappo.uri`      | Base URI for the SOAP endpoint     | _required_ |
+| `sappo.username` | Username for SAP-PO authentication | _required_ |
+| `sappo.password` | Password for SAP-PO authentication | _required_ |
 
 ### Email Notifications
 
@@ -68,14 +68,14 @@ spring:
     password: smtp_password
 ```
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `evasys.notification.from` | Sender email address | *required* |
-| `evasys.notification.recipients` | List of recipient email addresses | `[]` |
-| `spring.mail.host` | SMTP server hostname | *required* |
-| `spring.mail.port` | SMTP server port | *required* |
-| `spring.mail.username` | SMTP authentication username | - |
-| `spring.mail.password` | SMTP authentication password | - |
+| Property                         | Description                       | Default    |
+| -------------------------------- | --------------------------------- | ---------- |
+| `evasys.notification.from`       | Sender email address              | _required_ |
+| `evasys.notification.recipients` | List of recipient email addresses | `[]`       |
+| `spring.mail.host`               | SMTP server hostname              | _required_ |
+| `spring.mail.port`               | SMTP server port                  | _required_ |
+| `spring.mail.username`           | SMTP authentication username      | -          |
+| `spring.mail.password`           | SMTP authentication password      | -          |
 
 ### CXF Web Services
 
@@ -86,9 +86,9 @@ cxf:
   path: /ws
 ```
 
-| Property | Description | Default |
-|----------|-------------|---------|
-| `cxf.path` | Base path for SOAP web services | `/ws` |
+| Property   | Description                     | Default |
+| ---------- | ------------------------------- | ------- |
+| `cxf.path` | Base path for SOAP web services | `/ws`   |
 
 The SOAP endpoint will be available at: `http://localhost:8080/ws/training`
 
@@ -124,12 +124,12 @@ management:
         enabled: true
 ```
 
-| Endpoint | Path | Description |
-|----------|------|-------------|
-| Health | `/actuator/health` | Application health status |
-| Info | `/actuator/info` | Application information |
-| Metrics | `/actuator/metrics` | Prometheus metrics |
-| SBOM | `/actuator/sbom` | Software Bill of Materials |
+| Endpoint | Path                | Description                |
+| -------- | ------------------- | -------------------------- |
+| Health   | `/actuator/health`  | Application health status  |
+| Info     | `/actuator/info`    | Application information    |
+| Metrics  | `/actuator/metrics` | Prometheus metrics         |
+| SBOM     | `/actuator/sbom`    | Software Bill of Materials |
 
 ### Logging
 
@@ -139,7 +139,7 @@ The application uses structured JSON logging (Logstash format) by default:
 logging:
   level:
     root: info
-    de.muenchen.evasys: debug  # optional: enable debug logging
+    de.muenchen.evasys: debug # optional: enable debug logging
   structured:
     format:
       console: logstash

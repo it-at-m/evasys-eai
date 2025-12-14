@@ -133,10 +133,10 @@ spec:
 
 The application exposes health endpoints for container orchestration:
 
-| Endpoint | Purpose |
-|----------|---------|
-| `/actuator/health` | Overall health status |
-| `/actuator/health/liveness` | Liveness probe (is the app running?) |
+| Endpoint                     | Purpose                                      |
+| ---------------------------- | -------------------------------------------- |
+| `/actuator/health`           | Overall health status                        |
+| `/actuator/health/liveness`  | Liveness probe (is the app running?)         |
 | `/actuator/health/readiness` | Readiness probe (is the app ready to serve?) |
 
 ## Monitoring
@@ -146,6 +146,7 @@ The application exposes health endpoints for container orchestration:
 Metrics are exposed at `/actuator/metrics` in Prometheus format.
 
 Key metrics to monitor:
+
 - `http_server_requests_seconds` - HTTP request latency
 - `jvm_memory_used_bytes` - JVM memory usage
 - `jvm_gc_pause_seconds` - Garbage collection pauses

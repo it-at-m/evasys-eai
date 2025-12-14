@@ -29,6 +29,7 @@ mvn clean install
 The project uses Apache CXF to generate Java classes from WSDL definitions. Generated sources are placed in `target/generated-sources/cxf/`.
 
 Two WSDLs are processed:
+
 - `evasys-soapserver-v100.wsdl` - evasys SOAP API client
 - `SI_Training_AS_IB.wsdl` - SAP-PO inbound interface
 
@@ -134,7 +135,7 @@ Report is available at `target/site/jacoco/index.html`.
 
 ## Project Structure
 
-```
+```bash
 evasys-eai/
 ├── Dockerfile                       # Container image definition
 ├── pom.xml                          # Maven configuration
@@ -227,7 +228,7 @@ public boolean isTrainerExisting(int trainerId, int subunitId) {
 @Mapping(source = "NEW_SAP_FIELD", target = "newEvasysField")
 ```
 
-2. Rebuild to verify the mapping compiles correctly.
+1. Rebuild to verify the mapping compiles correctly.
 
 ### Adding Custom Error Handling
 
@@ -251,7 +252,7 @@ Add to `application-local.yml`:
 logging:
   level:
     de.muenchen.evasys: debug
-    org.apache.cxf: debug  # SOAP messages
+    org.apache.cxf: debug # SOAP messages
 ```
 
 ### SOAP Message Logging

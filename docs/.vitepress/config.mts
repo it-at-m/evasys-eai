@@ -4,8 +4,8 @@ import { withMermaid } from "vitepress-plugin-mermaid";
 // https://vitepress.dev/reference/site-config
 const vitepressConfig = defineConfig({
   base: "/evasys-eai/",
-  title: "RefArch Docs Template",
-  description: "Documentation template from the RefArch Templates",
+  title: "evasys EAI",
+  description: "Enterprise Application Integration for SAP-PO and evasys",
   head: [
     [
       "link",
@@ -21,27 +21,41 @@ const vitepressConfig = defineConfig({
     nav: [
       { text: "Home", link: "/" },
       {
-        text: "Docs",
+        text: "Documentation",
         items: [
-          { text: "Example", link: "/example" },
-          { text: "External link", link: "https://refarch.oss.muenchen.de" },
+          { text: "Architecture", link: "/architecture" },
+          { text: "Configuration", link: "/configuration" },
+          { text: "Development", link: "/development" },
+          { text: "Deployment", link: "/deployment" },
         ],
       },
     ],
     sidebar: [
-      { text: "Example", link: "/example" },
-      { text: "External link", link: "https://refarch.oss.muenchen.de" },
+      {
+        text: "Getting Started",
+        items: [
+          { text: "Overview", link: "/" },
+          { text: "Architecture", link: "/architecture" },
+        ],
+      },
+      {
+        text: "Guides",
+        items: [
+          { text: "Configuration", link: "/configuration" },
+          { text: "Development", link: "/development" },
+          { text: "Deployment", link: "/deployment" },
+        ],
+      },
     ],
     socialLinks: [
-      { icon: "github", link: "https://github.com/it-at-m/refarch-templates" },
+      { icon: "github", link: "https://github.com/it-at-m/evasys-eai" },
     ],
     editLink: {
-      pattern:
-        "https://github.com/it-at-m/refarch-templates/blob/main/docs/:path",
-      text: "View this page on GitHub",
+      pattern: "https://github.com/it-at-m/evasys-eai/blob/main/docs/:path",
+      text: "Edit this page on GitHub",
     },
     footer: {
-      message: `<a href="https://opensource.muenchen.de/impress.html">Impress and Contact</a>`,
+      message: `<a href="https://opensource.muenchen.de/impress.html">Imprint and Contact</a>`,
     },
     outline: {
       level: "deep",

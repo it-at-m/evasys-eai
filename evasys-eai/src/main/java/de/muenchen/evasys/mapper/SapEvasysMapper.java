@@ -8,6 +8,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.User;
@@ -22,7 +23,7 @@ public interface SapEvasysMapper {
     @Mapping(source = "TRAINER1NNAME", target = "MSSurName")
     @Mapping(source = "TRAINER1MAIL", target = "MSEmail")
     @Mapping(source = "TEILBEREICHID", target = "MNFbid")
-    @Mapping(source = "TRAINERGESCHL", target = "MNAddressId")
+    @Mapping(source = "TRAINERGESCHL", target = "MNAddressId", qualifiedByName = "mapAddressId")
     User mapToTrainer(ZLSOSTEVASYSRFC trainingData);
 
     @Mapping(target = "MNType", constant = "1")
@@ -31,7 +32,7 @@ public interface SapEvasysMapper {
     @Mapping(source = "secondaryTrainer.vorname", target = "MSFirstName")
     @Mapping(source = "secondaryTrainer.nachname", target = "MSSurName")
     @Mapping(source = "secondaryTrainer.email", target = "MSEmail")
-    @Mapping(source = "secondaryTrainer.anrede", target = "MNAddressId")
+    @Mapping(source = "secondaryTrainer.anrede", target = "MNAddressId", qualifiedByName = "mapAddressId")
     @Mapping(source = "trainingData.TEILBEREICHID", target = "MNFbid")
     User mapToSecondaryTrainer(SecondaryTrainer secondaryTrainer, ZLSOSTEVASYSRFC trainingData);
 
@@ -43,6 +44,14 @@ public interface SapEvasysMapper {
     @Mapping(source = "TRAININGTNANZAHL", target = "MNCountStud")
     @Mapping(source = "TEILBEREICHID", target = "MNFbid")
     Course mapToCourse(ZLSOSTEVASYSRFC trainingData);
+
+    @Named("mapAddressId")
+    static Integer mapAddressId(final String value) {
+        if (value == null || value.isBlank()) {
+            return 0; // neutral gender
+        }
+        return Integer.valueOf(value);
+    }
 
     @AfterMapping
     default void buildCustomFieldsJson(final ZLSOSTEVASYSRFC source, @MappingTarget final Course target) {

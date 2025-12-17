@@ -44,6 +44,7 @@ public class TrainingProcessorService {
     }
 
     private void processTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        normalizeTeilbereichId(trainingData);
         final int trainerId = Integer.parseInt(trainingData.getTRAINER1ID());
         final int subunitId = Integer.parseInt(trainingData.getTEILBEREICHID());
 
@@ -67,12 +68,19 @@ public class TrainingProcessorService {
     }
 
     private void processCourse(final ZLSOSTEVASYSRFC trainingData) {
+        normalizeTeilbereichId(trainingData);
         final int courseId = Integer.parseInt(trainingData.getTRAININGID());
 
         if (evasysService.courseExists(courseId)) {
             evasysService.updateCourse(trainingData);
         } else {
             evasysService.insertCourse(trainingData);
+        }
+    }
+
+    private static void normalizeTeilbereichId(final ZLSOSTEVASYSRFC trainingData) {
+        if (trainingData.getTEILBEREICHID() == null || trainingData.getTEILBEREICHID().isBlank()) {
+            trainingData.setTEILBEREICHID("5");
         }
     }
 }

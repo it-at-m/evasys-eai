@@ -116,15 +116,38 @@ class SecondaryTrainerTest {
     }
 
     @Test
-    void testThrowsExceptionWhenFieldIsNull() {
+    void testNullFieldIsHandledGracefully() {
         ZLSOSTEVASYSRFC trainingData = createData(
                 "11; 22",
-                null, // null field should cause size mismatch
+                null, // null field should be filled with empty values
                 "Dr.; Prof.",
                 "Max; Erika",
                 "Mustermann; Musterfrau",
                 "max@example.com; erika@example.com");
 
-        assertThrows(IllegalArgumentException.class, () -> SecondaryTrainer.fromTrainingData(trainingData));
+        List<SecondaryTrainer> result = SecondaryTrainer.fromTrainingData(trainingData);
+
+        assertEquals(2, result.size());
+
+        SecondaryTrainer t1 = result.get(0);
+        SecondaryTrainer t2 = result.get(1);
+
+        assertEquals("11", t1.id());
+        assertEquals("22", t2.id());
+
+        assertEquals("", t1.anrede());
+        assertEquals("", t2.anrede());
+
+        assertEquals("Dr.", t1.titel());
+        assertEquals("Prof.", t2.titel());
+
+        assertEquals("Max", t1.vorname());
+        assertEquals("Erika", t2.vorname());
+
+        assertEquals("Mustermann", t1.nachname());
+        assertEquals("Musterfrau", t2.nachname());
+
+        assertEquals("max@example.com", t1.email());
+        assertEquals("erika@example.com", t2.email());
     }
 }

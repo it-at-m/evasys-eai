@@ -15,7 +15,7 @@ public class EvasysService {
         this.client = client;
     }
 
-    public boolean trainerExists(final int trainerId, final int subunitId) {
+    public boolean trainerExists(final String trainerId, final int subunitId) {
         return client.isTrainerExisting(trainerId, subunitId);
     }
 
@@ -31,8 +31,8 @@ public class EvasysService {
         return SecondaryTrainer.fromTrainingData(trainingData);
     }
 
-    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
-        client.updateSecondaryTrainer(trainingData, secondaryTrainer);
+    public void updateSecondaryTrainer(final SecondaryTrainer secondaryTrainer) {
+        client.updateSecondaryTrainer(secondaryTrainer);
     }
 
     public void insertSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {

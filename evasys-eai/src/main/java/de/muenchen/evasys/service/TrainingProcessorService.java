@@ -45,7 +45,7 @@ public class TrainingProcessorService {
 
     private void processTrainer(final ZLSOSTEVASYSRFC trainingData) {
         normalizeTeilbereichId(trainingData);
-        final int trainerId = Integer.parseInt(trainingData.getTRAINER1ID());
+        final String trainerId = trainingData.getTRAINER1ID();
         final int subunitId = Integer.parseInt(trainingData.getTEILBEREICHID());
 
         if (evasysService.trainerExists(trainerId, subunitId)) {
@@ -57,10 +57,10 @@ public class TrainingProcessorService {
         final List<SecondaryTrainer> trainers = evasysService.extractSecondaryTrainers(trainingData);
 
         for (final SecondaryTrainer trainer : trainers) {
-            final int secondaryTrainerId = Integer.parseInt(trainer.id());
+            final String secondaryTrainerId = trainer.id();
 
             if (evasysService.trainerExists(secondaryTrainerId, subunitId)) {
-                evasysService.updateSecondaryTrainer(trainingData, trainer);
+                evasysService.updateSecondaryTrainer(trainer);
             } else {
                 evasysService.insertSecondaryTrainer(trainingData, trainer);
             }

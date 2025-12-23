@@ -121,14 +121,14 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserList);
 
-        User result = evasysClient.getUser(1);
+        User result = evasysClient.getUser("1");
 
         Assertions.assertEquals(mockedUser, result);
     }
 
     @Test
     public void testGetUserThrowsExceptionWhenUserNotFound() throws Exception {
-        int userId = 999;
+        String userId = "999";
 
         TSoapfault faultresponse = new TSoapfault();
         faultresponse.setSErrorMessage("ERR_302");
@@ -188,7 +188,7 @@ public class EvasysClientTest {
 
     @Test
     public void testThatTrainerIsExistingReturnsTrue() throws Exception {
-        int trainerId = 1;
+        String trainerId = "1";
         User mockedUser = new User();
         mockedUser.setMSExternalId(String.valueOf(trainerId));
         UserList mockedUserList = new UserList();
@@ -209,7 +209,7 @@ public class EvasysClientTest {
 
     @Test
     public void testThatTrainerIsNotExistingReturnsFalse() throws Exception {
-        int trainerId = 1;
+        String trainerId = "1";
         User emptyUser = new User();
         UserList mockedUserList = new UserList();
         mockedUserList.getUsers().add(emptyUser);
@@ -300,9 +300,6 @@ public class EvasysClientTest {
 
     @Test
     public void shouldCallSoapPortWithCorrectUserWhenUpdatingSecondaryTrainer() throws Exception {
-        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
-        trainingData.setTEILBEREICHID("1");
-
         SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
                 "2",
                 "2",
@@ -325,7 +322,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evasysClient.updateSecondaryTrainer(trainingData, secondaryTrainer);
+        evasysClient.updateSecondaryTrainer(secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -339,7 +336,6 @@ public class EvasysClientTest {
         assertEquals("Erika", captured.getMSFirstName());
         assertEquals("Musterfrau", captured.getMSSurName());
         assertEquals("erika@example.com", captured.getMSEmail());
-        assertEquals(1, captured.getMNFbid());
         assertEquals(2, captured.getMNAddressId());
     }
 

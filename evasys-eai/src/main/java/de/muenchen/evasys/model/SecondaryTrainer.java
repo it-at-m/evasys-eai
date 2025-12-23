@@ -3,6 +3,7 @@ package de.muenchen.evasys.model;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public record SecondaryTrainer(
@@ -13,44 +14,59 @@ public record SecondaryTrainer(
         String nachname,
         String email) {
 
-    public static List<SecondaryTrainer> fromTrainingData(final ZLSOSTEVASYSRFC trainingData) {
-        if (trainingData.getSEKTRAINERID() == null || trainingData.getSEKTRAINERID().isBlank()) {
+    public static List<SecondaryTrainer> fromTrainingData(
+            final ZLSOSTEVASYSRFC trainingData) {
+
+        if (trainingData == null
+                || trainingData.getSEKTRAINERID() == null
+                || trainingData.getSEKTRAINERID().isBlank()) {
             return List.of();
         }
 
-        final List<String> ids = split(trainingData.getSEKTRAINERID());
-        final List<String> anreden = split(trainingData.getSEKTRAINERANREDE());
-        final List<String> titel = split(trainingData.getSEKTRAINERTITEL());
-        final List<String> firstNames = split(trainingData.getSEKTRAINERVNAME());
-        final List<String> lastNames = split(trainingData.getSEKTRAINERNNAME());
-        final List<String> emails = split(trainingData.getSEKTRAINERMAIL());
-
+        final List<String> ids = splitIds(trainingData.getSEKTRAINERID());
         final int size = ids.size();
 
-        if (List.of(anreden, titel, firstNames, lastNames, emails)
-                .stream().anyMatch(list -> list.size() != size)) {
-            throw new IllegalArgumentException("Secondary trainer lists have inconsistent length");
-        }
+        final List<String> addresses = splitOrFill(trainingData.getSEKTRAINERANREDE(), size);
+        final List<String> titles = splitOrFill(trainingData.getSEKTRAINERTITEL(), size);
+        final List<String> firstNames = splitOrFill(trainingData.getSEKTRAINERVNAME(), size);
+        final List<String> lastNames = splitOrFill(trainingData.getSEKTRAINERNNAME(), size);
+        final List<String> emails = splitOrFill(trainingData.getSEKTRAINERMAIL(), size);
 
         final List<SecondaryTrainer> trainers = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             trainers.add(new SecondaryTrainer(
                     ids.get(i),
-                    anreden.get(i),
-                    titel.get(i),
+                    addresses.get(i),
+                    titles.get(i),
                     firstNames.get(i),
                     lastNames.get(i),
                     emails.get(i)));
         }
+
         return trainers;
     }
 
-    private static List<String> split(final String str) {
-        if (str == null) {
-            return List.of();
-        }
+    private static List<String> splitIds(final String str) {
         return Arrays.stream(str.split(";"))
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .toList();
+    }
+
+    private static List<String> splitOrFill(final String str, final int expectedSize) {
+        if (str == null || str.isBlank()) {
+            return new ArrayList<>(Collections.nCopies(expectedSize, ""));
+        }
+
+        final List<String> values = Arrays.stream(str.split(";"))
+                .map(String::trim)
+                .toList();
+
+        if (values.size() != expectedSize) {
+            throw new IllegalArgumentException(
+                    "Secondary trainer lists have inconsistent length");
+        }
+
+        return values;
     }
 }

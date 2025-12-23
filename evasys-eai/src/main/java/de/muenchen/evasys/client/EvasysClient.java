@@ -6,6 +6,8 @@ import de.muenchen.evasys.mapper.SapEvasysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,11 +64,11 @@ public class EvasysClient {
         }
     }
 
-    public User getUser(final int externalUserId) {
+    public User getUser(final String externalUserId) {
         LOGGER.info("Requesting user data...");
         try {
             final UserIdType userIdType = UserIdType.EXTERNAL;
-            final UserList userList = soapPort.getUserByIdConsiderExternalID(String.valueOf(externalUserId), userIdType, false, false, false, false);
+            final UserList userList = soapPort.getUserByIdConsiderExternalID(externalUserId, userIdType, false, false, false, false);
             return userList.getUsers().getFirst();
         } catch (SoapfaultMessage e) {
             final String errorCode = e.getFaultInfo().getSErrorMessage();
@@ -95,12 +97,12 @@ public class EvasysClient {
         }
     }
 
-    public boolean isTrainerExisting(final int trainerId, final int subunitId) {
+    public boolean isTrainerExisting(final String trainerId, final int subunitId) {
         LOGGER.info("Checking whether trainer exists...");
         try {
             final UserList users = getUsersBySubunit(subunitId);
             final List<User> userList = users.getUsers();
-            return userList.stream().anyMatch(user -> String.valueOf(trainerId).equals(user.getMSExternalId()));
+            return userList.stream().anyMatch(user -> trainerId.equals(user.getMSExternalId()));
         } catch (Exception e) {
             LOGGER.error("Error", e);
             return false;
@@ -110,16 +112,39 @@ public class EvasysClient {
     public void updateTrainer(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Updating trainer data...");
         try {
-            final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
-            final User updatedTrainer = mapper.mapToTrainer(trainingData);
-            updatedTrainer.setMNId(foundUser.getMNId());
-            final Holder<User> userHolder = new Holder<>(updatedTrainer);
+            final User user = getUser(trainingData.getTRAINER1ID());
+
+            updateIfNotEmpty(trainingData.getTRAINER1ID(), user::setMSExternalId);
+            updateIfNotEmptyInt(trainingData.getTRAINERGESCHL(), user::setMNAddressId);
+            updateIfNotEmpty(trainingData.getTRAINER1TITEL(), user::setMSTitle);
+            updateIfNotEmpty(trainingData.getTRAINER1VNAME(), user::setMSFirstName);
+            updateIfNotEmpty(trainingData.getTRAINER1NNAME(), user::setMSSurName);
+            updateIfNotEmpty(trainingData.getTRAINER1MAIL(), user::setMSEmail);
+            updateIfNotEmptyInt(trainingData.getTEILBEREICHID(), user::setMNFbid);
+
+            final Holder<User> userHolder = new Holder<>(user);
             soapPort.updateUser(userHolder);
             LOGGER.info("Trainer with ID {} successfully updated", trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while updating trainer", e);
         } catch (Exception e) {
             throw new EvasysException("Unexpected error while updating trainer", e);
+        }
+    }
+
+    public void updateIfNotEmpty(final String newValue, final Consumer<String> setter) {
+        if (newValue != null && !newValue.isBlank()) {
+            setter.accept(newValue);
+        }
+    }
+
+    private void updateIfNotEmptyInt(final String value, final IntConsumer setter) {
+        if (value != null && !value.isBlank()) {
+            try {
+                setter.accept(Integer.parseInt(value));
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Cannot parse integer from '{}'", value);
+            }
         }
     }
 
@@ -151,13 +176,19 @@ public class EvasysClient {
         }
     }
 
-    public void updateSecondaryTrainer(final ZLSOSTEVASYSRFC trainingData, final SecondaryTrainer secondaryTrainer) {
+    public void updateSecondaryTrainer(final SecondaryTrainer secondaryTrainer) {
         LOGGER.info("Updating secondary trainer data...");
         try {
-            final User foundUser = getUser(Integer.parseInt(secondaryTrainer.id()));
-            final User updatedUser = mapper.mapToSecondaryTrainer(secondaryTrainer, trainingData);
-            updatedUser.setMNId(foundUser.getMNId());
-            final Holder<User> userHolder = new Holder<>(updatedUser);
+            final User user = getUser(secondaryTrainer.id());
+
+            updateIfNotEmpty(secondaryTrainer.id(), user::setMSExternalId);
+            updateIfNotEmptyInt(secondaryTrainer.anrede(), user::setMNAddressId);
+            updateIfNotEmpty(secondaryTrainer.titel(), user::setMSTitle);
+            updateIfNotEmpty(secondaryTrainer.vorname(), user::setMSFirstName);
+            updateIfNotEmpty(secondaryTrainer.nachname(), user::setMSSurName);
+            updateIfNotEmpty(secondaryTrainer.email(), user::setMSEmail);
+
+            final Holder<User> userHolder = new Holder<>(user);
             soapPort.updateUser(userHolder);
             LOGGER.info("Secondary trainer with ID {} successfully updated", secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
@@ -181,7 +212,7 @@ public class EvasysClient {
     public void updateCourse(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Updating course data...");
         try {
-            final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
+            final User foundUser = getUser(trainingData.getTRAINER1ID());
             final Course foundCourse = getCourse(Integer.parseInt(trainingData.getTRAININGID()));
             final Course updatedCourse = mapper.mapToCourse(trainingData);
 
@@ -201,7 +232,7 @@ public class EvasysClient {
     public void insertCourse(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Inserting new course...");
         try {
-            final User foundUser = getUser(Integer.parseInt(trainingData.getTRAINER1ID()));
+            final User foundUser = getUser(trainingData.getTRAINER1ID());
             final Course newCourse = mapper.mapToCourse(trainingData);
 
             newCourse.setMNUserId(foundUser.getMNId());

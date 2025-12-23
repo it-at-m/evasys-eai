@@ -17,6 +17,7 @@ import wsdl.soapserver_v100.User;
 public interface SapEvasysMapper {
 
     @Mapping(target = "MNType", constant = "1")
+    @Mapping(target = "MBActiveUser", constant = "true")
     @Mapping(source = "TRAINER1ID", target = "MSExternalId")
     @Mapping(source = "TRAINER1TITEL", target = "MSTitle")
     @Mapping(source = "TRAINER1VNAME", target = "MSFirstName")
@@ -27,6 +28,7 @@ public interface SapEvasysMapper {
     User mapToTrainer(ZLSOSTEVASYSRFC trainingData);
 
     @Mapping(target = "MNType", constant = "1")
+    @Mapping(target = "MBActiveUser", constant = "true")
     @Mapping(source = "secondaryTrainer.id", target = "MSExternalId")
     @Mapping(source = "secondaryTrainer.titel", target = "MSTitle")
     @Mapping(source = "secondaryTrainer.vorname", target = "MSFirstName")

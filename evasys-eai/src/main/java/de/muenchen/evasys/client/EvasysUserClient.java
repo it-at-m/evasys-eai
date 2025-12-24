@@ -42,20 +42,22 @@ public class EvasysUserClient extends AbstractEvasysClient {
     /* ------------------------- READ OPERATIONS ------------------------- */
 
     public UnitList getSubunits() {
-        LOGGER.info("Requesting list of subunits");
+        LOGGER.info("Requesting list of subunits...");
         return soapExecutor.execute(
                 "requesting subunits",
                 soapPort::getSubunits);
     }
 
     public UserList getUsersBySubunit(final int subunitId) {
-        LOGGER.info("Requesting users for subunit {}", subunitId);
+        LOGGER.info("Requesting list of users by subunit...");
         try {
-            return soapExecutor.execute(
+            final UserList users = soapExecutor.execute(
                     "requesting users by subunit",
                     () -> soapPort.getUsersBySubunit(
                             subunitId,
                             false, false, false, false));
+            LOGGER.info("Received {} users", users.getUsers().size());
+            return users;
         } catch (EvasysException e) {
             if (ERR_NO_USERS_FOUND.equals(extractErrorCode(e))) {
                 throw new EvasysException("No users found in the given subunit", e);
@@ -65,13 +67,16 @@ public class EvasysUserClient extends AbstractEvasysClient {
     }
 
     public UserList getUsersByExternalId(final String externalUserId) {
+        LOGGER.info("Requesting all users with external ID {}...", externalUserId);
         try {
-            return soapExecutor.execute(
+            final UserList userList = soapExecutor.execute(
                     "requesting users by external ID",
                     () -> soapPort.getUserByIdConsiderExternalID(
                             externalUserId,
                             UserIdType.EXTERNAL,
                             false, false, false, false));
+            LOGGER.info("Found {} users with external ID {}", userList.getUsers().size(), externalUserId);
+            return userList;
         } catch (EvasysException e) {
             if (ERR_USER_NOT_FOUND.equals(extractErrorCode(e))) {
                 throw new EvasysException(
@@ -84,9 +89,11 @@ public class EvasysUserClient extends AbstractEvasysClient {
     public User getUserByExternalIdAndSubunit(
             final String externalUserId,
             final String teilbereichId) {
+        LOGGER.info("Requesting user with external ID {} and subunit ID {}...", externalUserId, teilbereichId);
         final int subunitId = parseSubunitId(teilbereichId);
-        return getUsersByExternalId(externalUserId)
-                .getUsers()
+        final UserList userList = getUsersByExternalId(externalUserId);
+
+        final User matchingUser = userList.getUsers()
                 .stream()
                 .filter(u -> u.getMNFbid() != null && u.getMNFbid() == subunitId)
                 .findFirst()
@@ -95,11 +102,16 @@ public class EvasysUserClient extends AbstractEvasysClient {
                                 + externalUserId
                                 + " and subunit ID "
                                 + teilbereichId));
+
+        LOGGER.info("Found matching user with ID {} and subunit ID {}",
+                matchingUser.getMNId(), matchingUser.getMNFbid());
+        return matchingUser;
     }
 
     /* ------------------------- EXISTENCE CHECKS ------------------------- */
 
     public boolean isTrainerExisting(final String trainerId, final int subunitId) {
+        LOGGER.info("Checking whether trainer exists...");
         try {
             return getUsersBySubunit(subunitId)
                     .getUsers()
@@ -114,41 +126,47 @@ public class EvasysUserClient extends AbstractEvasysClient {
     /* ------------------------- TRAINER HANDLING ------------------------- */
 
     public void insertTrainer(final ZLSOSTEVASYSRFC trainingData) {
-        LOGGER.info("Inserting trainer {}", trainingData.getTRAINER1ID());
+        LOGGER.info("Inserting new trainer...");
         soapExecutor.executeVoid(
                 "inserting trainer",
                 () -> soapPort.insertUser(
                         new Holder<>(mapper.mapToTrainer(trainingData))));
+        LOGGER.info("Trainer with ID {} successfully inserted", trainingData.getTRAINER1ID());
     }
 
     public void updateTrainer(final ZLSOSTEVASYSRFC trainingData) {
+        LOGGER.info("Updating trainer data...");
         updateUsers(
                 trainingData.getTRAINER1ID(),
                 user -> applyPrimaryTrainerUpdates(user, trainingData));
+        LOGGER.info("Successfully updated user(s) with external ID {}", trainingData.getTRAINER1ID());
     }
 
     public void insertSecondaryTrainer(
             final ZLSOSTEVASYSRFC trainingData,
             final SecondaryTrainer secondaryTrainer) {
-        LOGGER.info("Inserting secondary trainer {}", secondaryTrainer.id());
+        LOGGER.info("Inserting new secondary trainer...");
         soapExecutor.executeVoid(
                 "inserting secondary trainer",
                 () -> soapPort.insertUser(
                         new Holder<>(mapper.mapToSecondaryTrainer(
                                 secondaryTrainer, trainingData))));
+        LOGGER.info("Secondary trainer with ID {} successfully inserted", secondaryTrainer.id());
     }
 
     public void updateSecondaryTrainer(final SecondaryTrainer secondaryTrainer) {
+        LOGGER.info("Updating secondary trainer data...");
         updateUsers(
                 secondaryTrainer.id(),
                 user -> applySecondaryTrainerUpdates(user, secondaryTrainer));
+        LOGGER.info("Successfully updated user(s) with external ID {}", secondaryTrainer.id());
     }
 
     /* ------------------------- INTERNAL HELPERS ------------------------- */
 
     private void updateUsers(final String externalId, final Consumer<User> updater) {
         final List<User> users = getUsersByExternalId(externalId).getUsers();
-        LOGGER.info("Updating {} user(s) for external ID {}", users.size(), externalId);
+        LOGGER.info("Updating {} user(s) with external ID {}", users.size(), externalId);
 
         soapExecutor.executeVoid(
                 "updating users",

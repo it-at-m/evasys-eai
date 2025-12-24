@@ -39,7 +39,7 @@ public class EvasysCourseClient extends AbstractEvasysClient {
     /* ------------------------- READ OPERATIONS ------------------------- */
 
     public Course getCourse(final int courseId) {
-        LOGGER.info("Requesting course {}", courseId);
+        LOGGER.info("Requesting course data...");
         try {
             return soapExecutor.execute(
                     "requesting course",
@@ -58,6 +58,7 @@ public class EvasysCourseClient extends AbstractEvasysClient {
     /* ------------------------- EXISTENCE CHECKS ------------------------- */
 
     public boolean isCourseExisting(final int courseId) {
+        LOGGER.info("Checking whether course exists...");
         try {
             return getCourse(courseId) != null;
         } catch (Exception e) {
@@ -69,6 +70,7 @@ public class EvasysCourseClient extends AbstractEvasysClient {
     /* ------------------------- COURSE HANDLING ------------------------- */
 
     public void insertCourse(final ZLSOSTEVASYSRFC trainingData) {
+        LOGGER.info("Inserting new course...");
         final User trainer = userClient.getUserByExternalIdAndSubunit(
                 trainingData.getTRAINER1ID(),
                 trainingData.getTEILBEREICHID());
@@ -79,9 +81,11 @@ public class EvasysCourseClient extends AbstractEvasysClient {
         soapExecutor.executeVoid(
                 "inserting course",
                 () -> soapPort.insertCourse(course));
+        LOGGER.info("Course with ID {} successfully inserted", trainingData.getTRAININGID());
     }
 
     public void updateCourse(final ZLSOSTEVASYSRFC trainingData) {
+        LOGGER.info("Updating course data...");
         final User trainer = userClient.getUserByExternalIdAndSubunit(
                 trainingData.getTRAINER1ID(),
                 trainingData.getTEILBEREICHID());
@@ -96,5 +100,6 @@ public class EvasysCourseClient extends AbstractEvasysClient {
         soapExecutor.executeVoid(
                 "updating course",
                 () -> soapPort.updateCourse(new Holder<>(updated), false));
+        LOGGER.info("Course with ID {} successfully updated", trainingData.getTRAININGID());
     }
 }

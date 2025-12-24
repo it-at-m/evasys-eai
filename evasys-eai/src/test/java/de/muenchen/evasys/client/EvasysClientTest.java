@@ -45,12 +45,22 @@ public class EvasysClientTest {
     private SoapPort soapPortMock;
 
     private final SapEvasysMapper mapper = Mappers.getMapper(SapEvasysMapper.class);
+    private final SoapExecutor soapExecutor = new SoapExecutor();
 
-    private EvasysClient evasysClient;
+    private EvasysUserClient evasysUserClient;
+    private EvasysCourseClient evasysCourseClient;
 
     @BeforeEach
-    public void setup() {
-        evasysClient = new EvasysClient(soapPortMock, mapper);
+    void setup() {
+        evasysUserClient = new EvasysUserClient(
+                soapPortMock,
+                soapExecutor,
+                mapper);
+        evasysCourseClient = new EvasysCourseClient(
+                soapPortMock,
+                soapExecutor,
+                mapper,
+                evasysUserClient);
     }
 
     @Test
@@ -61,7 +71,7 @@ public class EvasysClientTest {
 
         when(soapPortMock.getSubunits()).thenReturn(mockedResponse);
 
-        UnitList result = evasysClient.getSubunits();
+        UnitList result = evasysUserClient.getSubunits();
 
         assertEquals(1, result.getUnits().size());
         assertEquals(mockedUnit, result.getUnits().getFirst());
@@ -81,7 +91,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        UserList result = evasysClient.getUsersBySubunit(1);
+        UserList result = evasysUserClient.getUsersBySubunit(1);
 
         assertEquals(1, result.getUsers().size());
         assertEquals(mockedUser, result.getUsers().getFirst());
@@ -101,7 +111,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenThrow(soapfaultMessage);
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getUsersBySubunit(1));
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysUserClient.getUsersBySubunit(1));
 
         assertEquals("No users found in the given subunit", exception.getMessage());
     }
@@ -119,7 +129,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourse);
 
-        Course result = evasysClient.getCourse(1);
+        Course result = evasysCourseClient.getCourse(1);
 
         assertEquals(mockedCourse, result);
     }
@@ -139,7 +149,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenThrow(soapfaultMessage);
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getCourse(courseId));
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.getCourse(courseId));
 
         assertEquals("No course found for the given id " + courseId, exception.getMessage());
     }
@@ -160,7 +170,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserList);
 
-        boolean result = evasysClient.isTrainerExisting(trainerId, 1);
+        boolean result = evasysUserClient.isTrainerExisting(trainerId, 1);
 
         assertTrue(result);
     }
@@ -180,7 +190,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserList);
 
-        boolean result = evasysClient.isTrainerExisting(trainerId, 1);
+        boolean result = evasysUserClient.isTrainerExisting(trainerId, 1);
 
         assertFalse(result);
     }
@@ -210,7 +220,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evasysClient.updateTrainer(trainingData);
+        evasysUserClient.updateTrainer(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -263,7 +273,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evasysClient.updateTrainer(trainingData);
+        evasysUserClient.updateTrainer(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -303,7 +313,7 @@ public class EvasysClientTest {
         trainingData.setTEILBEREICHID("1");
         trainingData.setTRAINERGESCHL("1");
 
-        evasysClient.insertTrainer(trainingData);
+        evasysUserClient.insertTrainer(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -344,7 +354,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evasysClient.updateSecondaryTrainer(secondaryTrainer);
+        evasysUserClient.updateSecondaryTrainer(secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -395,7 +405,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evasysClient.updateSecondaryTrainer(secondaryTrainer);
+        evasysUserClient.updateSecondaryTrainer(secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -436,7 +446,7 @@ public class EvasysClientTest {
                 "Musterfrau",
                 "erika@example.com");
 
-        evasysClient.insertSecondaryTrainer(trainingData, secondaryTrainer);
+        evasysUserClient.insertSecondaryTrainer(trainingData, secondaryTrainer);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -466,7 +476,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourse);
 
-        boolean result = evasysClient.isCourseExisting(courseId);
+        boolean result = evasysCourseClient.isCourseExisting(courseId);
 
         assertTrue(result);
     }
@@ -486,7 +496,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenThrow(soapfaultMessage);
 
-        boolean result = evasysClient.isCourseExisting(courseId);
+        boolean result = evasysCourseClient.isCourseExisting(courseId);
 
         assertFalse(result);
     }
@@ -535,7 +545,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourseResponse);
 
-        evasysClient.updateCourse(trainingData);
+        evasysCourseClient.updateCourse(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<Course>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -611,7 +621,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedResponse);
 
-        evasysClient.insertCourse(trainingData);
+        evasysCourseClient.insertCourse(trainingData);
 
         ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
         verify(soapPortMock).insertCourse(captor.capture());
@@ -693,7 +703,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedCourseResponse);
 
-        evasysClient.updateCourse(trainingData);
+        evasysCourseClient.updateCourse(trainingData);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<Course>> captor = ArgumentCaptor.forClass(Holder.class);
@@ -741,7 +751,7 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserListResponse);
 
-        evasysClient.insertCourse(trainingData);
+        evasysCourseClient.insertCourse(trainingData);
 
         ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
         verify(soapPortMock).insertCourse(captor.capture());
@@ -782,8 +792,8 @@ public class EvasysClientTest {
                 eq(false)))
                 .thenReturn(mockedUserListResponse);
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.updateCourse(trainingData));
-        assertTrue(exception.getMessage().contains("No user found with external ID 22 and subunit ID 33"));
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.updateCourse(trainingData));
+        assertTrue(exception.getMessage().contains("No user found for external ID 22 and subunit ID 33"));
     }
 
     @Test
@@ -793,8 +803,8 @@ public class EvasysClientTest {
         trainingData.setTRAINER1ID("22");
         trainingData.setTEILBEREICHID(null);
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.updateCourse(trainingData));
-        assertTrue(exception.getMessage().contains("Subunit ID (TEILBEREICHID) is required"));
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.updateCourse(trainingData));
+        assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
     }
 
     @Test
@@ -804,7 +814,7 @@ public class EvasysClientTest {
         trainingData.setTRAINER1ID("22");
         trainingData.setTEILBEREICHID("");
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.insertCourse(trainingData));
-        assertTrue(exception.getMessage().contains("Subunit ID (TEILBEREICHID) is required"));
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.insertCourse(trainingData));
+        assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
     }
 }

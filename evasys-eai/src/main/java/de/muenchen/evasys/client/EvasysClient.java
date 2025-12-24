@@ -81,6 +81,24 @@ public class EvasysClient {
         }
     }
 
+    private UserList getAllUsers(final String externalUserId) {
+        LOGGER.info("Requesting all users with external ID {}...", externalUserId);
+        try {
+            final UserIdType userIdType = UserIdType.EXTERNAL;
+            final UserList userList = soapPort.getUserByIdConsiderExternalID(externalUserId, userIdType, false, false, false, false);
+            LOGGER.info("Found {} users with external ID {}", userList.getUsers().size(), externalUserId);
+            return userList;
+        } catch (SoapfaultMessage e) {
+            final String errorCode = e.getFaultInfo().getSErrorMessage();
+            if (ERR_USER_NOT_FOUND.equals(errorCode)) {
+                throw new EvasysException("No user found for the given id " + externalUserId, e);
+            }
+            throw new EvasysException("SOAP error code: " + errorCode, e);
+        } catch (Exception e) {
+            throw new EvasysException("Unexpected error while requesting user data", e);
+        }
+    }
+
     public Course getCourse(final int courseId) {
         LOGGER.info("Requesting course data...");
         try {
@@ -112,19 +130,25 @@ public class EvasysClient {
     public void updateTrainer(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Updating trainer data...");
         try {
-            final User user = getUser(trainingData.getTRAINER1ID());
+            final UserList userList = getAllUsers(trainingData.getTRAINER1ID());
+            final List<User> users = userList.getUsers();
+            
+            LOGGER.info("Updating {} user(s) with external ID {}", users.size(), trainingData.getTRAINER1ID());
+            
+            for (final User user : users) {
+                updateIfNotEmpty(trainingData.getTRAINER1ID(), user::setMSExternalId);
+                updateIfNotEmptyInt(trainingData.getTRAINERGESCHL(), user::setMNAddressId);
+                updateIfNotEmpty(trainingData.getTRAINER1TITEL(), user::setMSTitle);
+                updateIfNotEmpty(trainingData.getTRAINER1VNAME(), user::setMSFirstName);
+                updateIfNotEmpty(trainingData.getTRAINER1NNAME(), user::setMSSurName);
+                updateIfNotEmpty(trainingData.getTRAINER1MAIL(), user::setMSEmail);
+                updateIfNotEmptyInt(trainingData.getTEILBEREICHID(), user::setMNFbid);
 
-            updateIfNotEmpty(trainingData.getTRAINER1ID(), user::setMSExternalId);
-            updateIfNotEmptyInt(trainingData.getTRAINERGESCHL(), user::setMNAddressId);
-            updateIfNotEmpty(trainingData.getTRAINER1TITEL(), user::setMSTitle);
-            updateIfNotEmpty(trainingData.getTRAINER1VNAME(), user::setMSFirstName);
-            updateIfNotEmpty(trainingData.getTRAINER1NNAME(), user::setMSSurName);
-            updateIfNotEmpty(trainingData.getTRAINER1MAIL(), user::setMSEmail);
-            updateIfNotEmptyInt(trainingData.getTEILBEREICHID(), user::setMNFbid);
-
-            final Holder<User> userHolder = new Holder<>(user);
-            soapPort.updateUser(userHolder);
-            LOGGER.info("Trainer with ID {} successfully updated", trainingData.getTRAINER1ID());
+                final Holder<User> userHolder = new Holder<>(user);
+                soapPort.updateUser(userHolder);
+            }
+            
+            LOGGER.info("Successfully updated {} user(s) with external ID {}", users.size(), trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while updating trainer", e);
         } catch (Exception e) {
@@ -179,18 +203,24 @@ public class EvasysClient {
     public void updateSecondaryTrainer(final SecondaryTrainer secondaryTrainer) {
         LOGGER.info("Updating secondary trainer data...");
         try {
-            final User user = getUser(secondaryTrainer.id());
+            final UserList userList = getAllUsers(secondaryTrainer.id());
+            final List<User> users = userList.getUsers();
+            
+            LOGGER.info("Updating {} user(s) with external ID {}", users.size(), secondaryTrainer.id());
+            
+            for (final User user : users) {
+                updateIfNotEmpty(secondaryTrainer.id(), user::setMSExternalId);
+                updateIfNotEmptyInt(secondaryTrainer.anrede(), user::setMNAddressId);
+                updateIfNotEmpty(secondaryTrainer.titel(), user::setMSTitle);
+                updateIfNotEmpty(secondaryTrainer.vorname(), user::setMSFirstName);
+                updateIfNotEmpty(secondaryTrainer.nachname(), user::setMSSurName);
+                updateIfNotEmpty(secondaryTrainer.email(), user::setMSEmail);
 
-            updateIfNotEmpty(secondaryTrainer.id(), user::setMSExternalId);
-            updateIfNotEmptyInt(secondaryTrainer.anrede(), user::setMNAddressId);
-            updateIfNotEmpty(secondaryTrainer.titel(), user::setMSTitle);
-            updateIfNotEmpty(secondaryTrainer.vorname(), user::setMSFirstName);
-            updateIfNotEmpty(secondaryTrainer.nachname(), user::setMSSurName);
-            updateIfNotEmpty(secondaryTrainer.email(), user::setMSEmail);
-
-            final Holder<User> userHolder = new Holder<>(user);
-            soapPort.updateUser(userHolder);
-            LOGGER.info("Secondary trainer with ID {} successfully updated", secondaryTrainer.id());
+                final Holder<User> userHolder = new Holder<>(user);
+                soapPort.updateUser(userHolder);
+            }
+            
+            LOGGER.info("Successfully updated {} user(s) with external ID {}", users.size(), secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while updating secondary trainer", e);
         } catch (Exception e) {

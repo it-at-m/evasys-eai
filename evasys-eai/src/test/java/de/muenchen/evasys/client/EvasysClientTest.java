@@ -18,6 +18,7 @@ import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.mapper.SapEvasysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -271,6 +272,70 @@ public class EvasysClientTest {
     }
 
     @Test
+    public void shouldUpdateAllUsersWithSameExternalIdWhenUpdatingTrainer() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1TITEL("Dr.");
+        trainingData.setTRAINER1VNAME("Max");
+        trainingData.setTRAINER1NNAME("Mustermann");
+        trainingData.setTRAINER1MAIL("max@example.com");
+        trainingData.setTEILBEREICHID("1");
+        trainingData.setTRAINERGESCHL("1");
+
+        User mockedUser1 = new User();
+        mockedUser1.setMNId(11);
+        mockedUser1.setMSExternalId("1");
+        User mockedUser2 = new User();
+        mockedUser2.setMNId(22);
+        mockedUser2.setMSExternalId("1");
+        User mockedUser3 = new User();
+        mockedUser3.setMNId(33);
+        mockedUser3.setMSExternalId("1");
+
+        UserList mockedResponse = new UserList();
+        mockedResponse.getUsers().add(mockedUser1);
+        mockedResponse.getUsers().add(mockedUser2);
+        mockedResponse.getUsers().add(mockedUser3);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedResponse);
+
+        evasysClient.updateTrainer(trainingData);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock, org.mockito.Mockito.times(3)).updateUser(captor.capture());
+
+        List<Holder<User>> allCaptured = captor.getAllValues();
+        assertEquals(3, allCaptured.size());
+
+        // Verify all users were updated with the same data
+        for (Holder<User> holder : allCaptured) {
+            User captured = holder.value;
+            assertEquals("1", captured.getMSExternalId());
+            assertEquals("Dr.", captured.getMSTitle());
+            assertEquals("Max", captured.getMSFirstName());
+            assertEquals("Mustermann", captured.getMSSurName());
+            assertEquals("max@example.com", captured.getMSEmail());
+            assertEquals(1, captured.getMNFbid());
+            assertEquals(1, captured.getMNAddressId());
+        }
+
+        // Verify that all three different user IDs were updated
+        List<Integer> updatedIds = allCaptured.stream()
+                .map(h -> h.value.getMNId())
+                .sorted()
+                .toList();
+        assertEquals(List.of(11, 22, 33), updatedIds);
+    }
+
+    @Test
     public void shouldCallSoapPortWithCorrectUserWhenInsertingTrainer() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAINER1ID("1");
@@ -337,6 +402,68 @@ public class EvasysClientTest {
         assertEquals("Musterfrau", captured.getMSSurName());
         assertEquals("erika@example.com", captured.getMSEmail());
         assertEquals(2, captured.getMNAddressId());
+    }
+
+    @Test
+    public void shouldUpdateAllUsersWithSameExternalIdWhenUpdatingSecondaryTrainer() throws Exception {
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
+
+        User mockedUser1 = new User();
+        mockedUser1.setMNId(22);
+        mockedUser1.setMSExternalId("2");
+        User mockedUser2 = new User();
+        mockedUser2.setMNId(44);
+        mockedUser2.setMSExternalId("2");
+        User mockedUser3 = new User();
+        mockedUser3.setMNId(66);
+        mockedUser3.setMSExternalId("2");
+
+        UserList mockedResponse = new UserList();
+        mockedResponse.getUsers().add(mockedUser1);
+        mockedResponse.getUsers().add(mockedUser2);
+        mockedResponse.getUsers().add(mockedUser3);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedResponse);
+
+        evasysClient.updateSecondaryTrainer(secondaryTrainer);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock, org.mockito.Mockito.times(3)).updateUser(captor.capture());
+
+        List<Holder<User>> allCaptured = captor.getAllValues();
+        assertEquals(3, allCaptured.size());
+
+        // Verify all users were updated with the same data
+        for (Holder<User> holder : allCaptured) {
+            User captured = holder.value;
+            assertEquals("2", captured.getMSExternalId());
+            assertEquals("Prof.", captured.getMSTitle());
+            assertEquals("Erika", captured.getMSFirstName());
+            assertEquals("Musterfrau", captured.getMSSurName());
+            assertEquals("erika@example.com", captured.getMSEmail());
+            assertEquals(2, captured.getMNAddressId());
+        }
+
+        // Verify that all three different user IDs were updated
+        List<Integer> updatedIds = allCaptured.stream()
+                .map(h -> h.value.getMNId())
+                .sorted()
+                .toList();
+        assertEquals(List.of(22, 44, 66), updatedIds);
     }
 
     @Test

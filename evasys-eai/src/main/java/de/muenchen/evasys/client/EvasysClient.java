@@ -64,23 +64,6 @@ public class EvasysClient {
         }
     }
 
-    public User getUser(final String externalUserId) {
-        LOGGER.info("Requesting user data...");
-        try {
-            final UserIdType userIdType = UserIdType.EXTERNAL;
-            final UserList userList = soapPort.getUserByIdConsiderExternalID(externalUserId, userIdType, false, false, false, false);
-            return userList.getUsers().getFirst();
-        } catch (SoapfaultMessage e) {
-            final String errorCode = e.getFaultInfo().getSErrorMessage();
-            if (ERR_USER_NOT_FOUND.equals(errorCode)) {
-                throw new EvasysException("No user found for the given id " + externalUserId, e);
-            }
-            throw new EvasysException("SOAP error code: " + errorCode, e);
-        } catch (Exception e) {
-            throw new EvasysException("Unexpected error while requesting user data", e);
-        }
-    }
-
     private UserList getAllUsers(final String externalUserId) {
         LOGGER.info("Requesting all users with external ID {}...", externalUserId);
         try {
@@ -97,6 +80,47 @@ public class EvasysClient {
         } catch (Exception e) {
             throw new EvasysException("Unexpected error while requesting user data", e);
         }
+    }
+
+    private User getUserByExternalIdAndSubunit(final String externalUserId, final String teilbereichId) {
+        LOGGER.info("Requesting user with external ID {} and subunit ID {}...", externalUserId, teilbereichId);
+
+        validateTeilbereichId(teilbereichId);
+        final int subunitId = parseSubunitId(teilbereichId);
+        final List<User> users = getAllUsers(externalUserId).getUsers();
+
+        LOGGER.info("Found {} user(s) with external ID {}, filtering by subunit ID {}",
+                users.size(), externalUserId, subunitId);
+
+        final User matchingUser = findUserBySubunitId(users, externalUserId, subunitId, teilbereichId);
+
+        LOGGER.info("Found matching user with ID {} and subunit ID {}",
+                matchingUser.getMNId(), matchingUser.getMNFbid());
+        return matchingUser;
+    }
+
+    private void validateTeilbereichId(final String teilbereichId) {
+        if (teilbereichId == null || teilbereichId.isBlank()) {
+            throw new EvasysException("Subunit ID (TEILBEREICHID) is required to find the correct user");
+        }
+    }
+
+    private int parseSubunitId(final String teilbereichId) {
+        try {
+            return Integer.parseInt(teilbereichId);
+        } catch (NumberFormatException e) {
+            throw new EvasysException("Invalid subunit ID format: " + teilbereichId, e);
+        }
+    }
+
+    private User findUserBySubunitId(final List<User> users, final String externalUserId,
+                                     final int subunitId, final String teilbereichId) {
+        return users.stream()
+                .filter(user -> user.getMNFbid() != null && user.getMNFbid() == subunitId)
+                .findFirst()
+                .orElseThrow(() -> new EvasysException(
+                        String.format("No user found with external ID %s and subunit ID %s",
+                                externalUserId, teilbereichId)));
     }
 
     public Course getCourse(final int courseId) {
@@ -132,9 +156,9 @@ public class EvasysClient {
         try {
             final UserList userList = getAllUsers(trainingData.getTRAINER1ID());
             final List<User> users = userList.getUsers();
-            
+
             LOGGER.info("Updating {} user(s) with external ID {}", users.size(), trainingData.getTRAINER1ID());
-            
+
             for (final User user : users) {
                 updateIfNotEmpty(trainingData.getTRAINER1ID(), user::setMSExternalId);
                 updateIfNotEmptyInt(trainingData.getTRAINERGESCHL(), user::setMNAddressId);
@@ -147,7 +171,7 @@ public class EvasysClient {
                 final Holder<User> userHolder = new Holder<>(user);
                 soapPort.updateUser(userHolder);
             }
-            
+
             LOGGER.info("Successfully updated {} user(s) with external ID {}", users.size(), trainingData.getTRAINER1ID());
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while updating trainer", e);
@@ -205,9 +229,9 @@ public class EvasysClient {
         try {
             final UserList userList = getAllUsers(secondaryTrainer.id());
             final List<User> users = userList.getUsers();
-            
+
             LOGGER.info("Updating {} user(s) with external ID {}", users.size(), secondaryTrainer.id());
-            
+
             for (final User user : users) {
                 updateIfNotEmpty(secondaryTrainer.id(), user::setMSExternalId);
                 updateIfNotEmptyInt(secondaryTrainer.anrede(), user::setMNAddressId);
@@ -219,7 +243,7 @@ public class EvasysClient {
                 final Holder<User> userHolder = new Holder<>(user);
                 soapPort.updateUser(userHolder);
             }
-            
+
             LOGGER.info("Successfully updated {} user(s) with external ID {}", users.size(), secondaryTrainer.id());
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while updating secondary trainer", e);
@@ -242,7 +266,9 @@ public class EvasysClient {
     public void updateCourse(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Updating course data...");
         try {
-            final User foundUser = getUser(trainingData.getTRAINER1ID());
+            final User foundUser = getUserByExternalIdAndSubunit(
+                    trainingData.getTRAINER1ID(),
+                    trainingData.getTEILBEREICHID());
             final Course foundCourse = getCourse(Integer.parseInt(trainingData.getTRAININGID()));
             final Course updatedCourse = mapper.mapToCourse(trainingData);
 
@@ -252,6 +278,8 @@ public class EvasysClient {
             final Holder<Course> courseHolder = new Holder<>(updatedCourse);
             soapPort.updateCourse(courseHolder, false);
             LOGGER.info("Course with ID {} successfully updated", trainingData.getTRAININGID());
+        } catch (EvasysException e) {
+            throw e;
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while updating course", e);
         } catch (Exception e) {
@@ -262,13 +290,17 @@ public class EvasysClient {
     public void insertCourse(final ZLSOSTEVASYSRFC trainingData) {
         LOGGER.info("Inserting new course...");
         try {
-            final User foundUser = getUser(trainingData.getTRAINER1ID());
+            final User foundUser = getUserByExternalIdAndSubunit(
+                    trainingData.getTRAINER1ID(),
+                    trainingData.getTEILBEREICHID());
             final Course newCourse = mapper.mapToCourse(trainingData);
 
             newCourse.setMNUserId(foundUser.getMNId());
 
             soapPort.insertCourse(newCourse);
             LOGGER.info("Course with ID {} successfully inserted", trainingData.getTRAININGID());
+        } catch (EvasysException e) {
+            throw e;
         } catch (SoapfaultMessage e) {
             throw new EvasysException("SOAP error while inserting course", e);
         } catch (Exception e) {

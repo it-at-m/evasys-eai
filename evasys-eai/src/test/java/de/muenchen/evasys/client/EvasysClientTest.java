@@ -19,7 +19,6 @@ import de.muenchen.evasys.mapper.SapEvasysMapper;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -105,48 +104,6 @@ public class EvasysClientTest {
         EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getUsersBySubunit(1));
 
         assertEquals("No users found in the given subunit", exception.getMessage());
-    }
-
-    @Test
-    public void testGetUserReturnsUser() throws Exception {
-        User mockedUser = new User();
-        UserList mockedUserList = new UserList();
-        mockedUserList.getUsers().add(mockedUser);
-
-        when(soapPortMock.getUserByIdConsiderExternalID(
-                anyString(),
-                any(UserIdType.class),
-                eq(false),
-                eq(false),
-                eq(false),
-                eq(false)))
-                .thenReturn(mockedUserList);
-
-        User result = evasysClient.getUser("1");
-
-        Assertions.assertEquals(mockedUser, result);
-    }
-
-    @Test
-    public void testGetUserThrowsExceptionWhenUserNotFound() throws Exception {
-        String userId = "999";
-
-        TSoapfault faultresponse = new TSoapfault();
-        faultresponse.setSErrorMessage("ERR_302");
-        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("User not found", faultresponse);
-
-        when(soapPortMock.getUserByIdConsiderExternalID(
-                anyString(),
-                any(UserIdType.class),
-                eq(false),
-                eq(false),
-                eq(false),
-                eq(false)))
-                .thenThrow(soapfaultMessage);
-
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.getUser(userId));
-
-        assertEquals("No user found for the given id " + userId, exception.getMessage());
     }
 
     @Test
@@ -556,6 +513,7 @@ public class EvasysClientTest {
 
         User mockedUser = new User();
         mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
         UserList mockedUserListResponse = new UserList();
         mockedUserListResponse.getUsers().add(mockedUser);
         Course mockedCourseResponse = new Course();
@@ -640,6 +598,7 @@ public class EvasysClientTest {
 
         User mockedUser = new User();
         mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
         UserList mockedResponse = new UserList();
         mockedResponse.getUsers().add(mockedUser);
 
@@ -685,5 +644,167 @@ public class EvasysClientTest {
                 }
                 """);
         assertEquals(expectedJson, actualJson);
+    }
+
+    @Test
+    public void shouldSelectCorrectUserBySubunitIdWhenUpdatingCourse() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        // Create multiple users with same external ID but different subunit IDs
+        User user1 = new User();
+        user1.setMNId(44);
+        user1.setMSExternalId("22");
+        user1.setMNFbid(11); // Different subunit
+
+        User user2 = new User();
+        user2.setMNId(55);
+        user2.setMSExternalId("22");
+        user2.setMNFbid(33); // Matches TEILBEREICHID
+
+        User user3 = new User();
+        user3.setMNId(66);
+        user3.setMSExternalId("22");
+        user3.setMNFbid(22); // Different subunit
+
+        UserList mockedUserListResponse = new UserList();
+        mockedUserListResponse.getUsers().add(user1);
+        mockedUserListResponse.getUsers().add(user2);
+        mockedUserListResponse.getUsers().add(user3);
+
+        Course mockedCourseResponse = new Course();
+        mockedCourseResponse.setMNCourseId(77);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserListResponse);
+
+        when(soapPortMock.getCourse(
+                anyString(),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedCourseResponse);
+
+        evasysClient.updateCourse(trainingData);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<Course>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock).updateCourse(captor.capture(), eq(false));
+
+        Course captured = captor.getValue().value;
+
+        assertEquals(55, captured.getMNUserId());
+    }
+
+    @Test
+    public void shouldSelectCorrectUserBySubunitIdWhenInsertingCourse() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        // Create multiple users with same external ID but different subunit IDs
+        User user1 = new User();
+        user1.setMNId(44);
+        user1.setMSExternalId("22");
+        user1.setMNFbid(11); // Different subunit
+
+        User user2 = new User();
+        user2.setMNId(55);
+        user2.setMSExternalId("22");
+        user2.setMNFbid(33); // Matches TEILBEREICHID
+
+        User user3 = new User();
+        user3.setMNId(66);
+        user3.setMSExternalId("22");
+        user3.setMNFbid(22); // Different subunit
+
+        UserList mockedUserListResponse = new UserList();
+        mockedUserListResponse.getUsers().add(user1);
+        mockedUserListResponse.getUsers().add(user2);
+        mockedUserListResponse.getUsers().add(user3);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserListResponse);
+
+        evasysClient.insertCourse(trainingData);
+
+        ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
+        verify(soapPortMock).insertCourse(captor.capture());
+
+        Course captured = captor.getValue();
+
+        assertEquals(55, captured.getMNUserId());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenNoUserMatchesSubunitId() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        // Create users with same external ID but none matching the subunit ID
+        User user1 = new User();
+        user1.setMNId(44);
+        user1.setMSExternalId("22");
+        user1.setMNFbid(11); // Different subunit
+
+        User user2 = new User();
+        user2.setMNId(55);
+        user2.setMSExternalId("22");
+        user2.setMNFbid(22); // Different subunit
+
+        UserList mockedUserListResponse = new UserList();
+        mockedUserListResponse.getUsers().add(user1);
+        mockedUserListResponse.getUsers().add(user2);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserListResponse);
+
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.updateCourse(trainingData));
+        assertTrue(exception.getMessage().contains("No user found with external ID 22 and subunit ID 33"));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenTeilbereichIdIsMissing() {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID(null);
+
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.updateCourse(trainingData));
+        assertTrue(exception.getMessage().contains("Subunit ID (TEILBEREICHID) is required"));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenTeilbereichIdIsBlank() {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("");
+
+        EvasysException exception = assertThrows(EvasysException.class, () -> evasysClient.insertCourse(trainingData));
+        assertTrue(exception.getMessage().contains("Subunit ID (TEILBEREICHID) is required"));
     }
 }

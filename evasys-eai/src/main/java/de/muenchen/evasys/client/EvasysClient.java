@@ -85,18 +85,24 @@ public class EvasysClient {
     private User getUserByExternalIdAndSubunit(final String externalUserId, final String teilbereichId) {
         LOGGER.info("Requesting user with external ID {} and subunit ID {}...", externalUserId, teilbereichId);
 
-        validateTeilbereichId(teilbereichId);
-        final int subunitId = parseSubunitId(teilbereichId);
-        final List<User> users = getAllUsers(externalUserId).getUsers();
+        try {
+            validateTeilbereichId(teilbereichId);
+            final int subunitId = parseSubunitId(teilbereichId);
+            final List<User> users = getAllUsers(externalUserId).getUsers();
 
-        LOGGER.info("Found {} user(s) with external ID {}, filtering by subunit ID {}",
-                users.size(), externalUserId, subunitId);
+            LOGGER.info("Found {} user(s) with external ID {}, filtering by subunit ID {}",
+                    users.size(), externalUserId, subunitId);
 
-        final User matchingUser = findUserBySubunitId(users, externalUserId, subunitId, teilbereichId);
+            final User matchingUser = findUserBySubunitId(users, externalUserId, subunitId, teilbereichId);
 
-        LOGGER.info("Found matching user with ID {} and subunit ID {}",
-                matchingUser.getMNId(), matchingUser.getMNFbid());
-        return matchingUser;
+            LOGGER.info("Found matching user with ID {} and subunit ID {}",
+                    matchingUser.getMNId(), matchingUser.getMNFbid());
+            return matchingUser;
+        } catch (EvasysException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new EvasysException("Unexpected error while requesting user by external ID and subunit", e);
+        }
     }
 
     private void validateTeilbereichId(final String teilbereichId) {
@@ -114,7 +120,7 @@ public class EvasysClient {
     }
 
     private User findUserBySubunitId(final List<User> users, final String externalUserId,
-                                     final int subunitId, final String teilbereichId) {
+            final int subunitId, final String teilbereichId) {
         return users.stream()
                 .filter(user -> user.getMNFbid() != null && user.getMNFbid() == subunitId)
                 .findFirst()
@@ -145,8 +151,11 @@ public class EvasysClient {
             final UserList users = getUsersBySubunit(subunitId);
             final List<User> userList = users.getUsers();
             return userList.stream().anyMatch(user -> trainerId.equals(user.getMSExternalId()));
+        } catch (EvasysException e) {
+            LOGGER.warn("Failed to check if trainer exists: {}", e.getMessage());
+            return false;
         } catch (Exception e) {
-            LOGGER.error("Error", e);
+            LOGGER.error("Unexpected error while checking if trainer exists", e);
             return false;
         }
     }
@@ -257,8 +266,11 @@ public class EvasysClient {
         try {
             final Course foundCourse = getCourse(courseId);
             return foundCourse != null;
+        } catch (EvasysException e) {
+            LOGGER.warn("Failed to check if course exists: {}", e.getMessage());
+            return false;
         } catch (Exception e) {
-            LOGGER.error("Error", e);
+            LOGGER.error("Unexpected error while checking if course exists", e);
             return false;
         }
     }

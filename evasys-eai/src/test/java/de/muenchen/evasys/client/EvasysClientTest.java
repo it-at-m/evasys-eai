@@ -203,7 +203,6 @@ public class EvasysClientTest {
         trainingData.setTRAINER1VNAME("Max");
         trainingData.setTRAINER1NNAME("Mustermann");
         trainingData.setTRAINER1MAIL("max@example.com");
-        trainingData.setTEILBEREICHID("1");
         trainingData.setTRAINERGESCHL("1");
 
         User mockedUser = new User();
@@ -234,7 +233,6 @@ public class EvasysClientTest {
         assertEquals("Max", captured.getMSFirstName());
         assertEquals("Mustermann", captured.getMSSurName());
         assertEquals("max@example.com", captured.getMSEmail());
-        assertEquals(1, captured.getMNFbid());
         assertEquals(1, captured.getMNAddressId());
     }
 
@@ -246,7 +244,6 @@ public class EvasysClientTest {
         trainingData.setTRAINER1VNAME("Max");
         trainingData.setTRAINER1NNAME("Mustermann");
         trainingData.setTRAINER1MAIL("max@example.com");
-        trainingData.setTEILBEREICHID("1");
         trainingData.setTRAINERGESCHL("1");
 
         User mockedUser1 = new User();
@@ -290,7 +287,6 @@ public class EvasysClientTest {
             assertEquals("Max", captured.getMSFirstName());
             assertEquals("Mustermann", captured.getMSSurName());
             assertEquals("max@example.com", captured.getMSEmail());
-            assertEquals(1, captured.getMNFbid());
             assertEquals(1, captured.getMNAddressId());
         }
 

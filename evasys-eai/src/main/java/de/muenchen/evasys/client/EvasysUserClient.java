@@ -187,7 +187,6 @@ public class EvasysUserClient extends AbstractEvasysClient {
         updateIfNotEmpty(data.getTRAINER1VNAME(), user::setMSFirstName);
         updateIfNotEmpty(data.getTRAINER1NNAME(), user::setMSSurName);
         updateIfNotEmpty(data.getTRAINER1MAIL(), user::setMSEmail);
-        updateIfNotEmptyInt(data.getTEILBEREICHID(), user::setMNFbid);
     }
 
     private void applySecondaryTrainerUpdates(

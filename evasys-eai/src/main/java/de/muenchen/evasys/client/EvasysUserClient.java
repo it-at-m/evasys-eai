@@ -86,26 +86,50 @@ public class EvasysUserClient extends AbstractEvasysClient {
         }
     }
 
+    public UserList getUsersByExternalIdsAndSubunit(
+            final List<String> externalUserIds,
+            final String teilbereichId) {
+
+        LOGGER.info(
+                "Requesting users with external IDs {} and subunit ID {}...",
+                externalUserIds, teilbereichId);
+
+        if (externalUserIds == null || externalUserIds.isEmpty()) {
+            throw new EvasysException("External user ID list must not be empty");
+        }
+
+        final int subunitId = parseSubunitId(teilbereichId);
+
+        final List<User> matchingUsers = externalUserIds.stream()
+                .distinct()
+                .flatMap(externalId -> getUsersByExternalId(externalId)
+                        .getUsers()
+                        .stream())
+                .filter(user -> user.getMNFbid() != null
+                        && user.getMNFbid() == subunitId)
+                .toList();
+
+        final UserList result = new UserList();
+        result.getUsers().addAll(matchingUsers);
+
+        LOGGER.info("Found {} matching user(s)", matchingUsers.size());
+        return result;
+    }
+
     public User getUserByExternalIdAndSubunit(
             final String externalUserId,
             final String teilbereichId) {
-        LOGGER.info("Requesting user with external ID {} and subunit ID {}...", externalUserId, teilbereichId);
-        final int subunitId = parseSubunitId(teilbereichId);
-        final UserList userList = getUsersByExternalId(externalUserId);
 
-        final User matchingUser = userList.getUsers()
+        return getUsersByExternalIdsAndSubunit(
+                List.of(externalUserId), teilbereichId)
+                .getUsers()
                 .stream()
-                .filter(u -> u.getMNFbid() != null && u.getMNFbid() == subunitId)
                 .findFirst()
                 .orElseThrow(() -> new EvasysException(
                         "No user found for external ID "
                                 + externalUserId
                                 + " and subunit ID "
                                 + teilbereichId));
-
-        LOGGER.info("Found matching user with ID {} and subunit ID {}",
-                matchingUser.getMNId(), matchingUser.getMNFbid());
-        return matchingUser;
     }
 
     /* ------------------------- EXISTENCE CHECKS ------------------------- */

@@ -3,7 +3,9 @@ package de.muenchen.evasys.client;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.mapper.SapEvasysMapper;
+import de.muenchen.evasys.model.SecondaryTrainer;
 import jakarta.xml.ws.Holder;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
 import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.User;
+import wsdl.soapserver_v100.UserList;
 
 @Component
 public class EvasysCourseClient extends AbstractEvasysClient {
@@ -78,6 +81,16 @@ public class EvasysCourseClient extends AbstractEvasysClient {
         final Course course = mapper.mapToCourse(trainingData);
         course.setMNUserId(trainer.getMNId());
 
+        final List<SecondaryTrainer> secondaryTrainers = SecondaryTrainer.fromTrainingData(trainingData);
+
+        if (!secondaryTrainers.isEmpty()) {
+            final List<String> secondaryTrainerIds = secondaryTrainers.stream()
+                    .map(SecondaryTrainer::id)
+                    .toList();
+            final UserList secondaryTrainerList = userClient.getUsersByExternalIdsAndSubunit(secondaryTrainerIds, trainingData.getTEILBEREICHID());
+            course.setMAoSecondaryInstructors(secondaryTrainerList);
+        }
+
         soapExecutor.executeVoid(
                 "inserting course",
                 () -> soapPort.insertCourse(course));
@@ -96,6 +109,16 @@ public class EvasysCourseClient extends AbstractEvasysClient {
         final Course updated = mapper.mapToCourse(trainingData);
         updated.setMNCourseId(existing.getMNCourseId());
         updated.setMNUserId(trainer.getMNId());
+
+        final List<SecondaryTrainer> secondaryTrainers = SecondaryTrainer.fromTrainingData(trainingData);
+
+        if (!secondaryTrainers.isEmpty()) {
+            final List<String> secondaryTrainerIds = secondaryTrainers.stream()
+                    .map(SecondaryTrainer::id)
+                    .toList();
+            final UserList secondaryTrainerList = userClient.getUsersByExternalIdsAndSubunit(secondaryTrainerIds, trainingData.getTEILBEREICHID());
+            updated.setMAoSecondaryInstructors(secondaryTrainerList);
+        }
 
         soapExecutor.executeVoid(
                 "updating course",

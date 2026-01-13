@@ -16,35 +16,37 @@ public class TrainingProcessorService {
 
     private final MailNotificationService mailNotificationService;
 
+    private final TrainingDataNormalizationService normalizationService;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TrainingProcessorService.class);
 
-    public TrainingProcessorService(final EvasysService evasysService, final MailNotificationService mailNotificationService) {
+    public TrainingProcessorService(final EvasysService evasysService, final MailNotificationService mailNotificationService,
+            final TrainingDataNormalizationService normalizationService) {
         this.evasysService = evasysService;
         this.mailNotificationService = mailNotificationService;
+        this.normalizationService = normalizationService;
     }
 
     public void processTrainingRequest(final ZLSOEVASYSRFC trainingRequest) {
         LOGGER.info("Processing training requests...");
         for (final ZLSOSTEVASYSRFC trainingData : trainingRequest.getITEVASYSRFC().getItem()) {
             try {
+                normalizationService.normalize(trainingData);
                 processTrainer(trainingData);
-            } catch (EvasysException e) {
-                LOGGER.error("Trainer processing failed: {}", e.getMessage());
-                mailNotificationService.notifyError("Trainer processing failed", e.getMessage(), e, trainingData);
-            }
-
-            try {
                 processCourse(trainingData);
             } catch (EvasysException e) {
-                LOGGER.error("Course processing failed: {}", e.getMessage());
-                mailNotificationService.notifyError("Course processing failed", e.getMessage(), e, trainingData);
+                LOGGER.error("Processing failed: {}", e.getMessage());
+                mailNotificationService.notifyError(
+                        "Processing failed",
+                        e.getMessage(),
+                        e,
+                        trainingData);
             }
         }
         LOGGER.info("All training requests processed");
     }
 
     private void processTrainer(final ZLSOSTEVASYSRFC trainingData) {
-        normalizeTeilbereichId(trainingData);
         final String trainerId = trainingData.getTRAINER1ID();
         final int subunitId = Integer.parseInt(trainingData.getTEILBEREICHID());
 
@@ -68,19 +70,12 @@ public class TrainingProcessorService {
     }
 
     private void processCourse(final ZLSOSTEVASYSRFC trainingData) {
-        normalizeTeilbereichId(trainingData);
         final int courseId = Integer.parseInt(trainingData.getTRAININGID());
 
         if (evasysService.courseExists(courseId)) {
             evasysService.updateCourse(trainingData);
         } else {
             evasysService.insertCourse(trainingData);
-        }
-    }
-
-    private static void normalizeTeilbereichId(final ZLSOSTEVASYSRFC trainingData) {
-        if (trainingData.getTEILBEREICHID() == null || trainingData.getTEILBEREICHID().isBlank()) {
-            trainingData.setTEILBEREICHID("5");
         }
     }
 }

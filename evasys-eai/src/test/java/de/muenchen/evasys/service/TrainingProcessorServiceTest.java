@@ -30,11 +30,14 @@ public class TrainingProcessorServiceTest {
     @Mock
     private MailNotificationService mailNotificationService;
 
+    @Mock
+    private TrainingDataNormalizationService normalizationService;
+
     private TrainingProcessorService trainingProcessorService;
 
     @BeforeEach
     public void setup() {
-        trainingProcessorService = new TrainingProcessorService(evasysMockService, mailNotificationService);
+        trainingProcessorService = new TrainingProcessorService(evasysMockService, mailNotificationService, normalizationService);
     }
 
     private ZLSOSTEVASYSRFC createTrainingData(String trainerId, String subunitId, String courseId) {
@@ -202,7 +205,7 @@ public class TrainingProcessorServiceTest {
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Trainer processing failed"),
+                eq("Processing failed"),
                 eq("Trainer error"),
                 any(EvasysException.class),
                 eq(trainingData));
@@ -219,7 +222,7 @@ public class TrainingProcessorServiceTest {
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Course processing failed"),
+                eq("Processing failed"),
                 eq("Course error"),
                 any(EvasysException.class),
                 eq(trainingData));

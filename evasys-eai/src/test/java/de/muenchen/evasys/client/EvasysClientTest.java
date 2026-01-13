@@ -199,11 +199,11 @@ public class EvasysClientTest {
     public void shouldCallSoapPortWithCorrectUserWhenUpdatingTrainer() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1ANREDE("1");
         trainingData.setTRAINER1TITEL("Dr.");
         trainingData.setTRAINER1VNAME("Max");
         trainingData.setTRAINER1NNAME("Mustermann");
         trainingData.setTRAINER1MAIL("max@example.com");
-        trainingData.setTRAINERGESCHL("1");
 
         User mockedUser = new User();
         mockedUser.setMNId(11);
@@ -240,11 +240,11 @@ public class EvasysClientTest {
     public void shouldUpdateAllUsersWithSameExternalIdWhenUpdatingTrainer() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1ANREDE("1");
         trainingData.setTRAINER1TITEL("Dr.");
         trainingData.setTRAINER1VNAME("Max");
         trainingData.setTRAINER1NNAME("Mustermann");
         trainingData.setTRAINER1MAIL("max@example.com");
-        trainingData.setTRAINERGESCHL("1");
 
         User mockedUser1 = new User();
         mockedUser1.setMNId(11);
@@ -302,12 +302,12 @@ public class EvasysClientTest {
     public void shouldCallSoapPortWithCorrectUserWhenInsertingTrainer() throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1ANREDE("1");
         trainingData.setTRAINER1TITEL("Dr.");
         trainingData.setTRAINER1VNAME("Max");
         trainingData.setTRAINER1NNAME("Mustermann");
         trainingData.setTRAINER1MAIL("max@example.com");
         trainingData.setTEILBEREICHID("1");
-        trainingData.setTRAINERGESCHL("1");
 
         evasysUserClient.insertTrainer(trainingData);
 
@@ -556,6 +556,7 @@ public class EvasysClientTest {
         assertEquals("11", captured.getMSPubCourseId());
         assertEquals(44, captured.getMNUserId());
         assertEquals(33, captured.getMNFbid());
+        assertEquals(true, captured.isHasAnonymousParticipants());
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode actualJson = mapper.readTree(captured.getMSCustomFieldsJSON());
@@ -630,6 +631,7 @@ public class EvasysClientTest {
         assertEquals("1.20", captured.getMSRoom());
         assertEquals(44, captured.getMNUserId());
         assertEquals(33, captured.getMNFbid());
+        assertEquals(true, captured.isHasAnonymousParticipants());
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode actualJson = mapper.readTree(captured.getMSCustomFieldsJSON());

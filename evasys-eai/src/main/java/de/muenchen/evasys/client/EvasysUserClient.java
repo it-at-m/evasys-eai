@@ -206,7 +206,7 @@ public class EvasysUserClient extends AbstractEvasysClient {
             final User user,
             final ZLSOSTEVASYSRFC data) {
         updateIfNotEmpty(data.getTRAINER1ID(), user::setMSExternalId);
-        updateIfNotEmptyInt(data.getTRAINERGESCHL(), user::setMNAddressId);
+        updateIfNotEmptyInt(data.getTRAINER1ANREDE(), user::setMNAddressId);
         updateIfNotEmpty(data.getTRAINER1TITEL(), user::setMSTitle);
         updateIfNotEmpty(data.getTRAINER1VNAME(), user::setMSFirstName);
         updateIfNotEmpty(data.getTRAINER1NNAME(), user::setMSSurName);

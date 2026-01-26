@@ -47,7 +47,7 @@
 
         <!-- CXF (Jakarta, compatible with Boot 3.x) -->
         <cxf.version>4.1.4</cxf.version>
-        <cxf.xjc.version>4.1.1</cxf.xjc.version>
+        <cxf.xjc.version>4.1.2</cxf.xjc.version>
 
         <!-- Linting & Formatting -->
         <spotless-maven-plugin.version>3.1.0</spotless-maven-plugin.version>

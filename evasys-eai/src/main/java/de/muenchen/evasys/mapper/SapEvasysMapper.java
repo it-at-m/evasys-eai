@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.Condition;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -46,6 +47,11 @@ public interface SapEvasysMapper {
     @Mapping(source = "TRAININGTNANZAHL", target = "MNCountStud")
     @Mapping(source = "TEILBEREICHID", target = "MNFbid")
     Course mapToCourse(ZLSOSTEVASYSRFC trainingData);
+
+    @Condition
+    default boolean isNotNullOrEmpty(final String value) {
+        return value != null && !value.isEmpty();
+    }
 
     @AfterMapping
     default void buildCustomFieldsJson(final ZLSOSTEVASYSRFC source, @MappingTarget final Course target) {

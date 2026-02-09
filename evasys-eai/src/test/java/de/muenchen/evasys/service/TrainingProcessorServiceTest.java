@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -224,6 +225,138 @@ public class TrainingProcessorServiceTest {
         verify(mailNotificationService, times(1)).notifyError(
                 eq("Processing failed"),
                 eq("Course error"),
+                any(EvasysException.class),
+                eq(trainingData));
+    }
+
+    @Test
+    public void testThatCourseIsUpdatedWhenInsertFailsButCourseExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evasysMockService.trainerExists(anyString(), anyInt())).thenReturn(true);
+        when(evasysMockService.courseExists(1)).thenReturn(false).thenReturn(true);
+        doThrow(new EvasysException("Course already exists")).when(evasysMockService).insertCourse(trainingData);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evasysMockService, times(1)).insertCourse(trainingData);
+        verify(evasysMockService, times(1)).updateCourse(trainingData);
+        verify(mailNotificationService, never()).notifyError(anyString(), anyString(), any(), any());
+    }
+
+    @Test
+    public void testThatCourseErrorIsPropagatedWhenInsertFailsAndCourseDoesNotExist() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evasysMockService.trainerExists(anyString(), anyInt())).thenReturn(true);
+        when(evasysMockService.courseExists(1)).thenReturn(false);
+        doThrow(new EvasysException("Insert failed")).when(evasysMockService).insertCourse(trainingData);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evasysMockService, times(1)).insertCourse(trainingData);
+        verify(evasysMockService, never()).updateCourse(trainingData);
+        verify(mailNotificationService, times(1)).notifyError(
+                eq("Processing failed"),
+                eq("Insert failed"),
+                any(EvasysException.class),
+                eq(trainingData));
+    }
+
+    @Test
+    public void testThatTrainerIsUpdatedWhenInsertFailsButTrainerExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evasysMockService.trainerExists("1", 1)).thenReturn(false).thenReturn(true);
+        when(evasysMockService.courseExists(anyInt())).thenReturn(true);
+        doThrow(new EvasysException("Trainer already exists")).when(evasysMockService).insertTrainer(trainingData);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evasysMockService, times(1)).insertTrainer(trainingData);
+        verify(evasysMockService, times(1)).updateTrainer(trainingData);
+        verify(mailNotificationService, never()).notifyError(anyString(), anyString(), any(), any());
+    }
+
+    @Test
+    public void testThatTrainerErrorIsPropagatedWhenInsertFailsAndTrainerDoesNotExist() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evasysMockService.trainerExists("1", 1)).thenReturn(false);
+        doThrow(new EvasysException("Insert failed")).when(evasysMockService).insertTrainer(trainingData);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evasysMockService, times(1)).insertTrainer(trainingData);
+        verify(evasysMockService, never()).updateTrainer(trainingData);
+        verify(mailNotificationService, times(1)).notifyError(
+                eq("Processing failed"),
+                eq("Insert failed"),
+                any(EvasysException.class),
+                eq(trainingData));
+    }
+
+    @Test
+    public void testThatSecondaryTrainerIsUpdatedWhenInsertFailsButTrainerExists() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        trainingData.setSEKTRAINERID("2");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
+
+        when(evasysMockService.trainerExists("1", 1)).thenReturn(true);
+        when(evasysMockService.trainerExists("2", 1)).thenReturn(false).thenReturn(true);
+        when(evasysMockService.extractSecondaryTrainers(trainingData))
+                .thenReturn(List.of(secondaryTrainer));
+        when(evasysMockService.courseExists(anyInt())).thenReturn(true);
+        doThrow(new EvasysException("Trainer already exists"))
+                .when(evasysMockService).insertSecondaryTrainer(trainingData, secondaryTrainer);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evasysMockService, times(1)).insertSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evasysMockService, times(1)).updateSecondaryTrainer(secondaryTrainer);
+        verify(mailNotificationService, never()).notifyError(anyString(), anyString(), any(), any());
+    }
+
+    @Test
+    public void testThatSecondaryTrainerErrorIsPropagatedWhenInsertFailsAndTrainerDoesNotExist() {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", "1");
+        trainingData.setSEKTRAINERID("2");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        SecondaryTrainer secondaryTrainer = new SecondaryTrainer(
+                "2",
+                "2",
+                "Prof.",
+                "Erika",
+                "Musterfrau",
+                "erika@example.com");
+
+        when(evasysMockService.trainerExists("1", 1)).thenReturn(true);
+        when(evasysMockService.trainerExists("2", 1)).thenReturn(false);
+        when(evasysMockService.extractSecondaryTrainers(trainingData))
+                .thenReturn(List.of(secondaryTrainer));
+        doThrow(new EvasysException("Insert failed"))
+                .when(evasysMockService).insertSecondaryTrainer(trainingData, secondaryTrainer);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        verify(evasysMockService, times(1)).insertSecondaryTrainer(trainingData, secondaryTrainer);
+        verify(evasysMockService, never()).updateSecondaryTrainer(secondaryTrainer);
+        verify(mailNotificationService, times(1)).notifyError(
+                eq("Processing failed"),
+                eq("Insert failed"),
                 any(EvasysException.class),
                 eq(trainingData));
     }

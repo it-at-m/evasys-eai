@@ -32,12 +32,33 @@ public class TrainingProcessorService {
         for (final ZLSOSTEVASYSRFC trainingData : trainingRequest.getITEVASYSRFC().getItem()) {
             try {
                 normalizationService.normalize(trainingData);
+            } catch (EvasysException e) {
+                LOGGER.error("Normalization failed: {}", e.getMessage());
+                mailNotificationService.notifyError(
+                        "Normalization failed",
+                        e.getMessage(),
+                        e,
+                        trainingData);
+                continue;
+            }
+
+            try {
                 processTrainer(trainingData);
+            } catch (EvasysException e) {
+                LOGGER.error("Trainer processing failed: {}", e.getMessage());
+                mailNotificationService.notifyError(
+                        "Trainer processing failed",
+                        e.getMessage(),
+                        e,
+                        trainingData);
+            }
+
+            try {
                 processCourse(trainingData);
             } catch (EvasysException e) {
-                LOGGER.error("Processing failed: {}", e.getMessage());
+                LOGGER.error("Course processing failed: {}", e.getMessage());
                 mailNotificationService.notifyError(
-                        "Processing failed",
+                        "Course processing failed",
                         e.getMessage(),
                         e,
                         trainingData);

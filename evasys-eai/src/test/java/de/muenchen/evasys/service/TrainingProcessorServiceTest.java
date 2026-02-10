@@ -206,7 +206,7 @@ public class TrainingProcessorServiceTest {
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Processing failed"),
+                eq("Trainer processing failed"),
                 eq("Trainer error"),
                 any(EvasysException.class),
                 eq(trainingData));
@@ -223,7 +223,7 @@ public class TrainingProcessorServiceTest {
         trainingProcessorService.processTrainingRequest(trainingRequest);
 
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Processing failed"),
+                eq("Course processing failed"),
                 eq("Course error"),
                 any(EvasysException.class),
                 eq(trainingData));
@@ -259,7 +259,7 @@ public class TrainingProcessorServiceTest {
         verify(evasysMockService, times(1)).insertCourse(trainingData);
         verify(evasysMockService, never()).updateCourse(trainingData);
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Processing failed"),
+                eq("Course processing failed"),
                 eq("Insert failed"),
                 any(EvasysException.class),
                 eq(trainingData));
@@ -294,7 +294,7 @@ public class TrainingProcessorServiceTest {
         verify(evasysMockService, times(1)).insertTrainer(trainingData);
         verify(evasysMockService, never()).updateTrainer(trainingData);
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Processing failed"),
+                eq("Trainer processing failed"),
                 eq("Insert failed"),
                 any(EvasysException.class),
                 eq(trainingData));
@@ -355,7 +355,7 @@ public class TrainingProcessorServiceTest {
         verify(evasysMockService, times(1)).insertSecondaryTrainer(trainingData, secondaryTrainer);
         verify(evasysMockService, never()).updateSecondaryTrainer(secondaryTrainer);
         verify(mailNotificationService, times(1)).notifyError(
-                eq("Processing failed"),
+                eq("Trainer processing failed"),
                 eq("Insert failed"),
                 any(EvasysException.class),
                 eq(trainingData));

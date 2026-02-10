@@ -21,15 +21,17 @@ evasys:
   password: api_password
   connection-timeout: 10s # default
   receive-timeout: 30s # default
+  default-teilbereich-id: "5"
 ```
 
-| Property                    | Description                          | Default    |
-| --------------------------- | ------------------------------------ | ---------- |
-| `evasys.uri`                | evasys SOAP API endpoint URL         | _required_ |
-| `evasys.username`           | API username for authentication      | _required_ |
-| `evasys.password`           | API password for authentication      | _required_ |
-| `evasys.connection-timeout` | Timeout for establishing connections | `10s`      |
-| `evasys.receive-timeout`    | Timeout for receiving responses      | `30s`      |
+| Property                         | Description                                                        | Default    |
+| -------------------------------- | ------------------------------------------------------------------ | ---------- |
+| `evasys.uri`                     | evasys SOAP API endpoint URL                                       | _required_ |
+| `evasys.username`                | API username for authentication                                    | _required_ |
+| `evasys.password`                | API password for authentication                                    | _required_ |
+| `evasys.connection-timeout`      | Timeout for establishing connections                               | `10s`      |
+| `evasys.receive-timeout`         | Timeout for receiving responses                                    | `30s`      |
+| `evasys.default-teilbereich-id`  | Default subunit ID when SAP training data has no TEILBEREICHID set | _required_ |
 
 ### SAP-PO Connection
 

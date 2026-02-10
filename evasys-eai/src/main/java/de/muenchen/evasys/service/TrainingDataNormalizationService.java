@@ -1,11 +1,18 @@
 package de.muenchen.evasys.service;
 
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
+import de.muenchen.evasys.configuration.EvasysProperties;
 import de.muenchen.evasys.exception.EvasysException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TrainingDataNormalizationService {
+
+    private final EvasysProperties evasysProperties;
+
+    public TrainingDataNormalizationService(final EvasysProperties evasysProperties) {
+        this.evasysProperties = evasysProperties;
+    }
 
     public void normalize(final ZLSOSTEVASYSRFC trainingData) {
         normalizeTeilbereichId(trainingData);
@@ -15,7 +22,7 @@ public class TrainingDataNormalizationService {
 
     private void normalizeTeilbereichId(final ZLSOSTEVASYSRFC trainingData) {
         if (trainingData.getTEILBEREICHID() == null || trainingData.getTEILBEREICHID().isBlank()) {
-            trainingData.setTEILBEREICHID("5");
+            trainingData.setTEILBEREICHID(evasysProperties.defaultTeilbereichId());
         } else {
             trainingData.setTEILBEREICHID(trainingData.getTEILBEREICHID().trim());
         }

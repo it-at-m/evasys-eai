@@ -14,5 +14,6 @@ public record EvasysProperties(
         @NotBlank String username,
         @NotBlank String password,
         @NotNull @DefaultValue("10s") Duration connectionTimeout,
-        @NotNull @DefaultValue("30s") Duration receiveTimeout) {
+        @NotNull @DefaultValue("30s") Duration receiveTimeout,
+        @NotBlank String defaultTeilbereichId) {
 }

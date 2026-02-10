@@ -4,6 +4,7 @@ import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.model.SecondaryTrainer;
+import de.muenchen.evasys.service.MetricsService.EventType;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +19,16 @@ public class TrainingProcessorService {
 
     private final TrainingDataNormalizationService normalizationService;
 
+    private final MetricsService metricsService;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TrainingProcessorService.class);
 
     public TrainingProcessorService(final EvasysService evasysService, final MailNotificationService mailNotificationService,
-            final TrainingDataNormalizationService normalizationService) {
+            final TrainingDataNormalizationService normalizationService, final MetricsService metricsService) {
         this.evasysService = evasysService;
         this.mailNotificationService = mailNotificationService;
         this.normalizationService = normalizationService;
+        this.metricsService = metricsService;
     }
 
     public void processTrainingRequest(final ZLSOEVASYSRFC trainingRequest) {
@@ -34,6 +38,7 @@ public class TrainingProcessorService {
                 normalizationService.normalize(trainingData);
             } catch (EvasysException e) {
                 LOGGER.error("Normalization failed: {}", e.getMessage());
+                metricsService.recordEvent(EventType.TRAINING_PROCESSING_FAILED);
                 mailNotificationService.notifyError(
                         "Normalization failed",
                         e.getMessage(),
@@ -42,10 +47,14 @@ public class TrainingProcessorService {
                 continue;
             }
 
+            boolean trainerProcessed = false;
             try {
                 processTrainer(trainingData);
+                metricsService.recordEvent(EventType.TRAINER_PROCESSED);
+                trainerProcessed = true;
             } catch (EvasysException e) {
                 LOGGER.error("Trainer processing failed: {}", e.getMessage());
+                metricsService.recordEvent(EventType.TRAINER_PROCESSING_FAILED);
                 mailNotificationService.notifyError(
                         "Trainer processing failed",
                         e.getMessage(),
@@ -53,15 +62,23 @@ public class TrainingProcessorService {
                         trainingData);
             }
 
+            boolean courseProcessed = false;
             try {
                 processCourse(trainingData);
+                metricsService.recordEvent(EventType.COURSE_PROCESSED);
+                courseProcessed = true;
             } catch (EvasysException e) {
                 LOGGER.error("Course processing failed: {}", e.getMessage());
+                metricsService.recordEvent(EventType.COURSE_PROCESSING_FAILED);
                 mailNotificationService.notifyError(
                         "Course processing failed",
                         e.getMessage(),
                         e,
                         trainingData);
+            }
+
+            if (trainerProcessed && courseProcessed) {
+                metricsService.recordEvent(EventType.TRAINING_PROCESSED);
             }
         }
         LOGGER.info("All training requests processed");
@@ -78,6 +95,7 @@ public class TrainingProcessorService {
         for (final SecondaryTrainer trainer : trainers) {
             final String secondaryTrainerId = trainer.id();
             insertSecondaryTrainerOrUpdateIfExists(secondaryTrainerId, subunitId, trainingData, trainer);
+            metricsService.recordEvent(EventType.SECONDARY_TRAINER_PROCESSED);
         }
     }
 

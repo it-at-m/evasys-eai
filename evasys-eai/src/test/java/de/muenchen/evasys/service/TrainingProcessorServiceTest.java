@@ -34,11 +34,14 @@ public class TrainingProcessorServiceTest {
     @Mock
     private TrainingDataNormalizationService normalizationService;
 
+    @Mock
+    private MetricsService metricsService;
+
     private TrainingProcessorService trainingProcessorService;
 
     @BeforeEach
     public void setup() {
-        trainingProcessorService = new TrainingProcessorService(evasysMockService, mailNotificationService, normalizationService);
+        trainingProcessorService = new TrainingProcessorService(evasysMockService, mailNotificationService, normalizationService, metricsService);
     }
 
     private ZLSOSTEVASYSRFC createTrainingData(String trainerId, String subunitId, String courseId) {

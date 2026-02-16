@@ -46,7 +46,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
 
         <!-- CXF (Jakarta, compatible with Boot 3.x) -->
-        <cxf.version>4.1.4</cxf.version>
+        <cxf.version>4.1.5</cxf.version>
         <cxf.xjc.version>4.1.2</cxf.xjc.version>
 
         <!-- Linting & Formatting -->

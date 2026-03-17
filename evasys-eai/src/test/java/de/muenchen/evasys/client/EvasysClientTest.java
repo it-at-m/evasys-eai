@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -814,5 +815,167 @@ public class EvasysClientTest {
 
         EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.insertCourse(trainingData));
         assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
+    }
+
+    @Test
+    public void shouldTreatAlreadyExistingCourseAsSuccessWhenInserting() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
+
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        TSoapfault fault = new TSoapfault();
+        fault.setSErrorMessage("ERR_313");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Already exists", fault);
+
+        doThrow(soapfaultMessage)
+                .when(soapPortMock)
+                .insertCourse(any(Course.class));
+
+        evasysCourseClient.insertCourse(trainingData);
+
+        verify(soapPortMock).insertCourse(any(Course.class));
+    }
+
+    @Test
+    public void shouldTreatAlreadyExistingCourseAsSuccessWhenUpdating() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
+
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(mockedUser);
+
+        Course existingCourse = new Course();
+        existingCourse.setMNCourseId(55);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        when(soapPortMock.getCourse(
+                anyString(),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
+                .thenReturn(existingCourse);
+
+        TSoapfault fault = new TSoapfault();
+        fault.setSErrorMessage("ERR_313");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Already exists", fault);
+
+        org.mockito.Mockito.doThrow(soapfaultMessage)
+                .when(soapPortMock)
+                .updateCourse(any(Holder.class), eq(false));
+
+        evasysCourseClient.updateCourse(trainingData);
+
+        verify(soapPortMock).updateCourse(any(Holder.class), eq(false));
+    }
+
+    @Test
+    public void shouldRethrowExceptionWhenInsertFailsWithDifferentError() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
+
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        TSoapfault fault = new TSoapfault();
+        fault.setSErrorMessage("ERR_999");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Some other error", fault);
+
+        org.mockito.Mockito.doThrow(soapfaultMessage)
+                .when(soapPortMock)
+                .insertCourse(any(Course.class));
+
+        assertThrows(EvasysException.class,
+                () -> evasysCourseClient.insertCourse(trainingData));
+    }
+
+    @Test
+    public void shouldRethrowExceptionWhenUpdateFailsWithDifferentError() throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID("11");
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
+
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(mockedUser);
+
+        Course existingCourse = new Course();
+        existingCourse.setMNCourseId(55);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        when(soapPortMock.getCourse(
+                anyString(),
+                eq(CourseIdType.PUBLIC),
+                eq(false),
+                eq(false)))
+                .thenReturn(existingCourse);
+
+        TSoapfault fault = new TSoapfault();
+        fault.setSErrorMessage("ERR_999");
+        SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Some other error", fault);
+
+        org.mockito.Mockito.doThrow(soapfaultMessage)
+                .when(soapPortMock)
+                .updateCourse(any(Holder.class), eq(false));
+
+        assertThrows(EvasysException.class,
+                () -> evasysCourseClient.updateCourse(trainingData));
     }
 }

@@ -20,6 +20,7 @@ public class EvasysCourseClient extends AbstractEvasysClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EvasysCourseClient.class);
     private static final String ERR_COURSE_NOT_FOUND = "ERR_312";
+    private static final String ERR_COURSE_ALREADY_EXISTS = "ERR_313";
 
     private final SapEvasysMapper mapper;
     private final EvasysUserClient userClient;
@@ -91,10 +92,21 @@ public class EvasysCourseClient extends AbstractEvasysClient {
             course.setMAoSecondaryInstructors(secondaryTrainerList);
         }
 
-        soapExecutor.executeVoid(
-                "inserting course",
-                () -> soapPort.insertCourse(course));
-        LOGGER.info("Course with ID {} successfully inserted", trainingData.getTRAININGID());
+        try {
+            soapExecutor.executeVoid(
+                    "inserting course",
+                    () -> soapPort.insertCourse(course));
+            LOGGER.info("Course with ID {} successfully inserted", trainingData.getTRAININGID());
+        } catch (EvasysException e) {
+            if (ERR_COURSE_ALREADY_EXISTS.equals(extractErrorCode(e))) {
+                LOGGER.info(
+                        "Course {} already exists in evasys (code={}), treating as success",
+                        trainingData.getTRAININGID(),
+                        ERR_COURSE_ALREADY_EXISTS);
+                return;
+            }
+            throw e;
+        }
     }
 
     public void updateCourse(final ZLSOSTEVASYSRFC trainingData) {
@@ -120,9 +132,20 @@ public class EvasysCourseClient extends AbstractEvasysClient {
             updated.setMAoSecondaryInstructors(secondaryTrainerList);
         }
 
-        soapExecutor.executeVoid(
-                "updating course",
-                () -> soapPort.updateCourse(new Holder<>(updated), false));
-        LOGGER.info("Course with ID {} successfully updated", trainingData.getTRAININGID());
+        try {
+            soapExecutor.executeVoid(
+                    "updating course",
+                    () -> soapPort.updateCourse(new Holder<>(updated), false));
+            LOGGER.info("Course with ID {} successfully updated", trainingData.getTRAININGID());
+        } catch (EvasysException e) {
+            if (ERR_COURSE_ALREADY_EXISTS.equals(extractErrorCode(e))) {
+                LOGGER.info(
+                        "Course {} already exists in evasys (code={}), treating as success",
+                        trainingData.getTRAININGID(),
+                        ERR_COURSE_ALREADY_EXISTS);
+                return;
+            }
+            throw e;
+        }
     }
 }

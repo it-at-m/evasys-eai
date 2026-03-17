@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,6 +27,9 @@ class MailNotificationServiceTest {
 
     @Mock
     private NotificationProperties props;
+
+    @Mock
+    private Environment environment;
 
     @InjectMocks
     private MailNotificationService mailNotificationService;
@@ -39,6 +43,7 @@ class MailNotificationServiceTest {
 
         when(props.from()).thenReturn("sender@example.com");
         when(props.recipients()).thenReturn(List.of("recipient@example.com"));
+        when(environment.getActiveProfiles()).thenReturn(new String[] { "test" });
     }
 
     static class TestRequest {

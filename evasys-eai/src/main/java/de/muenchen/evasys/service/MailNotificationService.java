@@ -5,9 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.NotificationProperties;
 import jakarta.mail.internet.MimeMessage;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -15,16 +21,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class MailNotificationService {
 
+    private static final String ENV_TEST = "test";
+    private static final String ENV_PROD = "prod";
     private static final Logger LOGGER = LoggerFactory.getLogger(MailNotificationService.class);
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     private final JavaMailSender mailSender;
     private final NotificationProperties notificationProperties;
+    private final Environment environment;
 
-    public MailNotificationService(final JavaMailSender mailSender, final NotificationProperties notificationProperties) {
+    public MailNotificationService(
+            final JavaMailSender mailSender,
+            final NotificationProperties notificationProperties,
+            final Environment environment) {
         this.mailSender = mailSender;
         this.notificationProperties = notificationProperties;
+        this.environment = environment;
     }
 
     public void notifyError(final String subject, final String errorMessage, final Throwable throwable, final Object requestObj) {
@@ -34,18 +47,21 @@ public class MailNotificationService {
 
             helper.setFrom(notificationProperties.from());
             helper.setTo(notificationProperties.recipients().toArray(String[]::new));
-            helper.setSubject("Fehler evasys-EAI");
+            final String environmentLabel = formatEnvironmentLabel();
+            helper.setSubject("Fehler evasys-EAI [" + environmentLabel + "]");
 
             final String stackTrace = throwable != null ? toStackTrace(throwable) : "keine Stacktrace verfügbar";
             final String requestStr = formatRequest(requestObj);
 
             final String body = String.format(
                     "<h2>%s</h2>%n" +
+                            "<p><strong>Umgebung:</strong> %s</p>%n" +
                             "<p><strong>Fehlermeldung:</strong> %s</p>%n" +
                             "<p><strong>Stacktrace:</strong><br/>%s</p>%n" +
                             "<p><strong>Request-Daten:</strong></p>%n" +
                             "<pre>%s</pre>%n",
                     escapeHtml(subject),
+                    escapeHtml(environmentLabel),
                     escapeHtml(errorMessage),
                     escapeHtml(stackTrace),
                     escapeHtml(requestStr));
@@ -125,5 +141,23 @@ public class MailNotificationService {
         return s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
+    }
+
+    private String formatEnvironmentLabel() {
+        final String[] profiles = environment.getActiveProfiles();
+        if (profiles == null || profiles.length == 0) {
+            return "default";
+        }
+        final Set<String> normalized = Arrays.stream(profiles)
+                .filter(Objects::nonNull)
+                .map(p -> p.trim().toLowerCase(Locale.ROOT))
+                .collect(Collectors.toSet());
+        if (normalized.contains(ENV_PROD)) {
+            return ENV_PROD;
+        }
+        if (normalized.contains(ENV_TEST)) {
+            return ENV_TEST;
+        }
+        return String.join(",", normalized);
     }
 }

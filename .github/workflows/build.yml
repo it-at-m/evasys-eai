@@ -1,4 +1,5 @@
-name: Build all
+# Workflow for building NPM/Maven projects and Docker images
+name: build
 
 on:
   pull_request:
@@ -9,13 +10,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     env:
-      TZ: Europe/Berlin # timezone
+      TZ: Europe/Berlin
     strategy:
       fail-fast: false
       matrix:
-        include: # hier müssen die Pfade angegeben werden
-          - app-path: evasys-eai
+        include: # Add or modify paths according to your project structure
+          - app-path: evays-eai
 
     steps:
       - uses: it-at-m/lhm_actions/action-templates/actions/action-checkout@94f7e40aa557a2790abfa98a9cc9186d260b94f8 # v1.0.27
@@ -29,6 +33,7 @@ jobs:
         uses: it-at-m/lhm_actions/action-templates/actions/action-maven-build@94f7e40aa557a2790abfa98a9cc9186d260b94f8 # v1.0.27
         with:
           app-path: ${{ matrix.app-path }}
+          java-version: "21"
       - if: github.ref == 'refs/heads/main'
         uses: it-at-m/lhm_actions/action-templates/actions/action-build-image@94f7e40aa557a2790abfa98a9cc9186d260b94f8 # v1.0.27
         with:

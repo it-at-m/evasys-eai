@@ -38,7 +38,7 @@ The evasys EAI acts as middleware that:
 ```bash
 cd evasys-eai
 mvn clean install
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+./runLocal.sh
 ```
 
 ### Configuration

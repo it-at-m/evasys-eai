@@ -1,7 +1,6 @@
 package de.muenchen.evasys.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.configuration.NotificationProperties;
 import jakarta.mail.internet.MimeMessage;
@@ -17,6 +16,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 public class MailNotificationService {
@@ -24,9 +25,9 @@ public class MailNotificationService {
     private static final String ENV_TEST = "test";
     private static final String ENV_PROD = "prod";
     private static final Logger LOGGER = LoggerFactory.getLogger(MailNotificationService.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+            .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .build();
     private final JavaMailSender mailSender;
     private final NotificationProperties notificationProperties;
     private final Environment environment;

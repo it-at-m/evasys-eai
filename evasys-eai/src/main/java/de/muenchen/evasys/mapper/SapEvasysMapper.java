@@ -1,7 +1,5 @@
 package de.muenchen.evasys.mapper;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.model.SecondaryTrainer;
 import org.mapstruct.AfterMapping;
@@ -10,6 +8,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.User;
 

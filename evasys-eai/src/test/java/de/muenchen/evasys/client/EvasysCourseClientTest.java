@@ -11,8 +11,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.mapper.SapEvasysMapper;
@@ -24,6 +22,8 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import wsdl.soapserver_v100.Course;
 import wsdl.soapserver_v100.CourseIdType;
 import wsdl.soapserver_v100.CourseList;
@@ -428,7 +428,8 @@ public class EvasysCourseClientTest {
                 eq(false)))
                 .thenReturn(mockedUserListResponse);
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.updateCourse(trainingData));
+        EvasysException exception = assertThrows(EvasysException.class,
+                () -> evasysCourseClient.updateCourse(trainingData));
         assertTrue(exception.getMessage().contains("No user found for external ID 22 and subunit ID 33"));
     }
 
@@ -439,7 +440,8 @@ public class EvasysCourseClientTest {
         trainingData.setTRAINER1ID("22");
         trainingData.setTEILBEREICHID(null);
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.updateCourse(trainingData));
+        EvasysException exception = assertThrows(EvasysException.class,
+                () -> evasysCourseClient.updateCourse(trainingData));
         assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
     }
 
@@ -450,7 +452,8 @@ public class EvasysCourseClientTest {
         trainingData.setTRAINER1ID("22");
         trainingData.setTEILBEREICHID("");
 
-        EvasysException exception = assertThrows(EvasysException.class, () -> evasysCourseClient.insertCourse(trainingData));
+        EvasysException exception = assertThrows(EvasysException.class,
+                () -> evasysCourseClient.insertCourse(trainingData));
         assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
     }
 

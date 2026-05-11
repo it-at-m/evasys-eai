@@ -25,6 +25,10 @@ spring:
     name: @project.artifactId@
     group: @project.groupId@
     version: @project.version@
+  web:
+    error:
+      whitelabel:
+        enabled: false
   mail:
     host: null
     port: 0
@@ -36,11 +40,6 @@ spring:
         auth: false
         starttls:
           enable: false
-
-server:
-  error:
-    whitelabel:
-      enabled: false
 
 management:
   endpoints:

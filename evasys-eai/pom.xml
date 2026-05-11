@@ -161,10 +161,10 @@
         </dependency>
 
         <!-- Dependencies for CVE fixes -->
-        <dependency> <!-- Added to fix CVE-2026-29062-->
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.21.2</version>
+        <dependency> <!-- Added to fix CVE-2026-42402, -42403, -42404 -->
+            <groupId>org.apache.neethi</groupId>
+            <artifactId>neethi</artifactId>
+            <version>3.2.2</version>
         </dependency>
 
         <!-- Configuration Processor -->

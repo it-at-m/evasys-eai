@@ -44,9 +44,9 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.release>${java.version}</maven.compiler.release>
 
-        <!-- CXF (Jakarta, compatible with Boot 3.x) -->
+        <!-- Apache CXF -->
         <cxf.version>4.2.0</cxf.version>
-        <cxf.xjc.version>4.1.2</cxf.xjc.version>
+        <cxf.xjc.version>4.2.0</cxf.xjc.version>
 
         <!-- Linting & Formatting -->
         <spotless-maven-plugin.version>3.4.0</spotless-maven-plugin.version>

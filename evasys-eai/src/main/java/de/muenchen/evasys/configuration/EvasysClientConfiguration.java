@@ -4,6 +4,10 @@ import de.muenchen.evasys.client.SoapHeaderHandler;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.handler.Handler;
 import java.util.List;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import wsdl.soapserver_v100.SoapPort;
@@ -19,8 +23,19 @@ public class EvasysClientConfiguration {
 
         final BindingProvider bp = (BindingProvider) port;
         bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, props.uri());
-        bp.getRequestContext().put("jakarta.xml.ws.client.connectionTimeout", props.connectionTimeout().toMillis());
-        bp.getRequestContext().put("jakarta.xml.ws.client.receiveTimeout", props.receiveTimeout().toMillis());
+
+        final Client client = ClientProxy.getClient(port);
+        final HTTPConduit conduit = (HTTPConduit) client.getConduit();
+
+        final HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
+        // evasys/IIS does not reliably handle HTTP chunked transfer encoding.
+        // Requests larger than CXF's default chunking threshold may fail with HTML 500
+        // or timeout, therefore chunking must stay disabled.
+        httpClientPolicy.setAllowChunking(false);
+        httpClientPolicy.setConnectionTimeout(props.connectionTimeout().toMillis());
+        httpClientPolicy.setReceiveTimeout(props.receiveTimeout().toMillis());
+
+        conduit.setClient(httpClientPolicy);
 
         @SuppressWarnings("rawtypes")
         final List<Handler> handlers = bp.getBinding().getHandlerChain();

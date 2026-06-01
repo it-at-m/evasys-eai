@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.Soapserver;
+import de.muenchen.evasys.client.EvasysTransportLoggingOutInterceptor;
 
 @Configuration
 @SuppressWarnings("PMD.CloseResource")
@@ -37,6 +38,8 @@ public class EvasysClientConfiguration {
         httpClientPolicy.setReceiveTimeout(props.receiveTimeout().toMillis());
 
         conduit.setClient(httpClientPolicy);
+
+        client.getOutInterceptors().add(new EvasysTransportLoggingOutInterceptor(httpClientPolicy));
 
         @SuppressWarnings("rawtypes")
         final List<Handler> handlers = bp.getBinding().getHandlerChain();

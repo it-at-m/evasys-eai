@@ -77,6 +77,8 @@ management:
 logging:
   level:
     root: info
+    de.muenchen.evasys.client.SoapHeaderHandler: debug
+    de.muenchen.evasys.client.EvasysTransportLoggingOutInterceptor: debug
   structured:
     format:
       console: logstash

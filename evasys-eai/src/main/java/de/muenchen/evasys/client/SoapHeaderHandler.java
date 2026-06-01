@@ -10,8 +10,14 @@ import jakarta.xml.ws.handler.soap.SOAPMessageContext;
 import java.util.Collections;
 import java.util.Set;
 import javax.xml.namespace.QName;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SoapHeaderHandler implements SOAPHandler<SOAPMessageContext> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SoapHeaderHandler.class);
 
     private static final String NAMESPACE_URI = "soapserver-v100.wsdl";
     private final String username;
@@ -25,9 +31,12 @@ public class SoapHeaderHandler implements SOAPHandler<SOAPMessageContext> {
     @Override
     public boolean handleMessage(final SOAPMessageContext context) {
         final boolean isOutbound = Boolean.TRUE.equals(context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY));
+
         if (isOutbound) {
             addAuthenticationHeader(context);
+            logSoapMessage(context);
         }
+
         return true;
     }
 
@@ -58,5 +67,31 @@ public class SoapHeaderHandler implements SOAPHandler<SOAPMessageContext> {
     @Override
     public Set<QName> getHeaders() {
         return Collections.emptySet();
+    }
+
+    private void logSoapMessage(final SOAPMessageContext context) {
+        if (!LOGGER.isDebugEnabled()) {
+            return;
+        }
+
+        try {
+            final SOAPMessage soapMessage = context.getMessage();
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            soapMessage.writeTo(out);
+
+            String xml = out.toString(StandardCharsets.UTF_8);
+            xml = xml.replaceAll("(<Password>).*?(</Password>)", "$1***$2");
+
+            LOGGER.debug(
+                    """
+                    Outgoing evasys SOAP message:
+                    payloadBytes={}
+                    xml={}
+                    """,
+                    out.size(),
+                    xml);
+        } catch (Exception e) {
+            LOGGER.warn("Could not log outgoing SOAP message", e);
+        }
     }
 }

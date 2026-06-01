@@ -14,4 +14,4 @@
   - head-branch: [ '^sec', '-security-' ]
 "Template: EAI":
   - changed-files:
-    - any-glob-to-any-file: ['evasys-eai/**']
+    - any-glob-to-any-file: ['eai/**']

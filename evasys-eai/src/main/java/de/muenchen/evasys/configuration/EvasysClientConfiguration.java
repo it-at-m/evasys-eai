@@ -1,5 +1,6 @@
 package de.muenchen.evasys.configuration;
 
+import de.muenchen.evasys.client.EvasysTransportLoggingOutInterceptor;
 import de.muenchen.evasys.client.SoapHeaderHandler;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.handler.Handler;
@@ -12,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.Soapserver;
-import de.muenchen.evasys.client.EvasysTransportLoggingOutInterceptor;
 
 @Configuration
 @SuppressWarnings("PMD.CloseResource")

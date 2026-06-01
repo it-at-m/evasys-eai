@@ -7,11 +7,11 @@ import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.ws.handler.MessageContext;
 import jakarta.xml.ws.handler.soap.SOAPHandler;
 import jakarta.xml.ws.handler.soap.SOAPMessageContext;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Set;
 import javax.xml.namespace.QName;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,10 +84,10 @@ public class SoapHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 
             LOGGER.debug(
                     """
-                    Outgoing evasys SOAP message:
-                    payloadBytes={}
-                    xml={}
-                    """,
+                            Outgoing evasys SOAP message:
+                            payloadBytes={}
+                            xml={}
+                            """,
                     out.size(),
                     xml);
         } catch (Exception e) {

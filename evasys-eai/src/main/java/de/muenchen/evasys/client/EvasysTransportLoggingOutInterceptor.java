@@ -32,18 +32,18 @@ public class EvasysTransportLoggingOutInterceptor extends AbstractPhaseIntercept
 
         LOGGER.debug(
                 """
-                Outgoing evasys HTTP transport:
-                  method={}
-                  requestUri={}
-                  contentType={}
-                  protocolHeaders={}
-                  contentLengthHeader={}
-                  transferEncodingHeader={}
-                  allowChunking={}
-                  chunkingThreshold={}
-                  connectionTimeout={}
-                  receiveTimeout={}
-                """,
+                        Outgoing evasys HTTP transport:
+                          method={}
+                          requestUri={}
+                          contentType={}
+                          protocolHeaders={}
+                          contentLengthHeader={}
+                          transferEncodingHeader={}
+                          allowChunking={}
+                          chunkingThreshold={}
+                          connectionTimeout={}
+                          receiveTimeout={}
+                        """,
                 message.get(Message.HTTP_REQUEST_METHOD),
                 message.get(Message.REQUEST_URI),
                 message.get(Message.CONTENT_TYPE),

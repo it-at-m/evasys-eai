@@ -3,7 +3,6 @@ package de.muenchen.evasys.client;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
@@ -23,7 +22,7 @@ public class EvasysTransportLoggingOutInterceptor extends AbstractPhaseIntercept
     }
 
     @Override
-    public void handleMessage(final Message message) throws Fault {
+    public void handleMessage(final Message message) {
         if (!LOGGER.isDebugEnabled()) {
             return;
         }
@@ -56,33 +55,24 @@ public class EvasysTransportLoggingOutInterceptor extends AbstractPhaseIntercept
                 httpClientPolicy.getReceiveTimeout());
     }
 
-    @SuppressWarnings("unchecked")
     private String findHeader(final Object headers, final String headerName) {
         if (!(headers instanceof Map<?, ?> headerMap)) {
             return "<not available>";
         }
 
         final String searched = headerName.toLowerCase(Locale.ROOT);
+        String result = "<not set>";
 
-        for (Map.Entry<?, ?> entry : headerMap.entrySet()) {
-            if (entry.getKey() == null) {
-                continue;
+        for (final Map.Entry<?, ?> entry : headerMap.entrySet()) {
+            if (entry.getKey() != null
+                    && searched.equals(entry.getKey().toString().toLowerCase(Locale.ROOT))) {
+                final Object value = entry.getValue();
+                result = value instanceof List<?> values
+                        ? values.toString()
+                        : String.valueOf(value);
             }
-
-            final String current = entry.getKey().toString().toLowerCase(Locale.ROOT);
-            if (!searched.equals(current)) {
-                continue;
-            }
-
-            final Object value = entry.getValue();
-
-            if (value instanceof List<?> values) {
-                return values.toString();
-            }
-
-            return String.valueOf(value);
         }
 
-        return "<not set>";
+        return result;
     }
 }

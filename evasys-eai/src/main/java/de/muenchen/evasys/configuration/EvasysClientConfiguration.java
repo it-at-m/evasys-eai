@@ -14,6 +14,7 @@ import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.Soapserver;
 
 @Configuration
+@SuppressWarnings("PMD.CloseResource")
 public class EvasysClientConfiguration {
 
     @Bean

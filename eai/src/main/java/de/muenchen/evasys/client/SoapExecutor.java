@@ -3,6 +3,7 @@ package de.muenchen.evasys.client;
 import de.muenchen.evasys.exception.EvasysException;
 import org.springframework.stereotype.Component;
 import wsdl.soapserver_v100.SoapfaultMessage;
+import wsdl.soapserver_v100.TSoapfault;
 
 @Component
 public class SoapExecutor {
@@ -38,10 +39,20 @@ public class SoapExecutor {
     }
 
     private EvasysException mapSoapFault(final String action, final SoapfaultMessage e) {
-        final String errorCode = e.getFaultInfo() != null
-                ? e.getFaultInfo().getSErrorMessage()
+        final TSoapfault faultInfo = e.getFaultInfo();
+
+        final String errorCode = faultInfo != null
+                ? faultInfo.getSErrorMessage()
                 : "UNKNOWN";
+
+        final String errorDetails = faultInfo != null
+                ? faultInfo.getSDetails()
+                : "UNKNOWN";
+
         return new EvasysException(
-                "SOAP error while " + action + " (code=" + errorCode + ")", e);
+                String.format(
+                        "SOAP error while %s (code=%s, details=%s)",
+                        action, errorCode, errorDetails),
+                e);
     }
 }

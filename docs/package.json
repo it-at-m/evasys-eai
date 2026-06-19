@@ -32,7 +32,7 @@
       "markdown-it": "14.2.0"
     },
     "mermaid": {
-      "dompurify": "3.4.9"
+      "dompurify": "3.4.11"
     }
   }
 }

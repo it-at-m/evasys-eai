@@ -12,6 +12,41 @@ jobs:
     permissions:
       contents: read
       security-events: write # Required to upload SARIF results to the GitHub Security tab
-    if: github.event_name != 'schedule' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'schedule'
     steps:
-      - uses: it-at-m/lhm_actions/action-templates/actions/action-trivy@877aafa9f0732cbc91819b60d237c351ea88f95c # v1.0.34
+      - uses: it-at-m/lhm_actions/action-templates/actions/action-trivy@4ed8f906bab8111fbd9a7af8e3f4129f9b721757 # v1.2.3
+
+  # JOB to run change detection
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    if: github.event_name == 'pull_request'
+    outputs:
+      packages: ${{ steps.filter.outputs.changes }}
+    steps:
+      # For pull requests it's not necessary to checkout the code
+      - uses: it-at-m/lhm_actions/action-templates/actions/action-filter@4ed8f906bab8111fbd9a7af8e3f4129f9b721757 # v1.2.3
+        id: filter
+        with:
+          filters: |
+            docs: docs/**
+            eai: eai/**
+      - run: |
+          echo ${{ toJSON(steps.filter.outputs.changes) }}
+
+  # JOB to scan modified packages
+  trivy-partial:
+    needs: changes
+    permissions:
+      contents: read
+      security-events: write # Required to upload SARIF results to the GitHub Security tab
+    if: ${{ needs.changes.outputs.packages != '' && needs.changes.outputs.packages != '[]' }}
+    strategy:
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: it-at-m/lhm_actions/action-templates/actions/action-trivy@4ed8f906bab8111fbd9a7af8e3f4129f9b721757 # v1.2.3
+        with:
+          path: ${{ matrix.package }}

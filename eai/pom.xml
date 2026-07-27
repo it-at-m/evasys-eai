@@ -11,7 +11,7 @@
 
     <groupId>de.muenchen.evasys</groupId>
     <artifactId>evasys-eai</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
 
     <name>evasys-eai</name>
     <description>EAI for synching data between SAP-PO and evasys</description>

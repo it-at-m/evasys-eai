@@ -164,7 +164,7 @@
         <dependency> <!-- Added to fix CVE-2026-42402, -42403, -42404 -->
             <groupId>org.apache.neethi</groupId>
             <artifactId>neethi</artifactId>
-            <version>3.2.2</version>
+            <version>3.2.3</version>
         </dependency>
 
         <!-- Configuration Processor -->

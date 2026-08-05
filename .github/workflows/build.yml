@@ -11,6 +11,7 @@ jobs:
   # JOB to run change detection
   changes:
     runs-on: ubuntu-latest
+    # Required permissions
     permissions:
       pull-requests: read
     outputs:

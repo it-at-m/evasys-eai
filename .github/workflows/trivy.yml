@@ -19,10 +19,12 @@ jobs:
   # JOB to run change detection
   changes:
     runs-on: ubuntu-latest
+    # Required permissions
     permissions:
       pull-requests: read
     if: github.event_name == 'pull_request'
     outputs:
+      # Expose matched filters as job 'packages' output variable
       packages: ${{ steps.filter.outputs.changes }}
     steps:
       # For pull requests it's not necessary to checkout the code
@@ -44,6 +46,8 @@ jobs:
     if: ${{ needs.changes.outputs.packages != '' && needs.changes.outputs.packages != '[]' }}
     strategy:
       matrix:
+        # Parse JSON array containing names of all filters matching any of changed files
+        # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages) }}
     runs-on: ubuntu-latest
     steps:

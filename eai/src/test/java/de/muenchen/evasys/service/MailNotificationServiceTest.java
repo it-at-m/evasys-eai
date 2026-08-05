@@ -46,16 +46,6 @@ class MailNotificationServiceTest {
         when(environment.getActiveProfiles()).thenReturn(new String[] { "test" });
     }
 
-    static class TestRequest {
-        public String id;
-        public int value;
-
-        public TestRequest(String id, int value) {
-            this.id = id;
-            this.value = value;
-        }
-    }
-
     private String getSentMessageContent() throws Exception {
         ArgumentCaptor<MimeMessage> captor = ArgumentCaptor.forClass(MimeMessage.class);
         verify(mailSender).send(captor.capture());

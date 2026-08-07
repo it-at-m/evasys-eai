@@ -2,12 +2,14 @@ package de.muenchen.evasys.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +20,9 @@ import jakarta.xml.ws.Holder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -433,28 +438,75 @@ public class EvasysCourseClientTest {
         assertTrue(exception.getMessage().contains("No user found for external ID 22 and subunit ID 33"));
     }
 
-    @Test
-    public void shouldThrowExceptionWhenTeilbereichIdIsMissing() {
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { " " })
+    public void blankTeilbereichIdSkipsCourseOperations(String blankTeilbereichId) throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAININGID("11");
         trainingData.setTRAINER1ID("22");
-        trainingData.setTEILBEREICHID(null);
+        trainingData.setTEILBEREICHID(blankTeilbereichId);
 
         EvasysException exception = assertThrows(EvasysException.class,
                 () -> evasysCourseClient.updateCourse(trainingData));
-        assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
+        assertEquals("TEILBEREICHID must not be empty", exception.getMessage());
+
+        verify(soapPortMock, never()).getCourse(anyString(), any(CourseIdType.class), eq(false), eq(false));
+        verify(soapPortMock, never()).updateCourse(any(Holder.class), eq(false));
+        verify(soapPortMock, never()).insertCourse(any(Course.class));
     }
 
-    @Test
-    public void shouldThrowExceptionWhenTeilbereichIdIsBlank() {
+    @ParameterizedTest
+    @ValueSource(strings = { "abc", "12.5", "2147483648" })
+    public void invalidTeilbereichIdSkipsCourseOperationsAndPreservesCause(String invalidTeilbereichId)
+            throws Exception {
         ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
         trainingData.setTRAININGID("11");
         trainingData.setTRAINER1ID("22");
-        trainingData.setTEILBEREICHID("");
+        trainingData.setTEILBEREICHID(invalidTeilbereichId);
 
         EvasysException exception = assertThrows(EvasysException.class,
-                () -> evasysCourseClient.insertCourse(trainingData));
-        assertTrue(exception.getMessage().contains("TEILBEREICHID must not be empty"));
+                () -> evasysCourseClient.updateCourse(trainingData));
+        assertEquals("Invalid TEILBEREICHID: " + invalidTeilbereichId, exception.getMessage());
+        assertInstanceOf(NumberFormatException.class, exception.getCause());
+
+        verify(soapPortMock, never()).getCourse(anyString(), any(CourseIdType.class), eq(false), eq(false));
+        verify(soapPortMock, never()).updateCourse(any(Holder.class), eq(false));
+        verify(soapPortMock, never()).insertCourse(any(Course.class));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { "abc", "12.5", " ", "2147483648" })
+    public void invalidTrainingIdSkipsCourseOperationsAndPreservesCause(String invalidTrainingId)
+            throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAININGID(invalidTrainingId);
+        trainingData.setTRAINER1ID("22");
+        trainingData.setTEILBEREICHID("33");
+
+        User mockedUser = new User();
+        mockedUser.setMNId(44);
+        mockedUser.setMNFbid(33);
+        UserList mockedUserList = new UserList();
+        mockedUserList.getUsers().add(mockedUser);
+
+        when(soapPortMock.getUserByIdConsiderExternalID(
+                anyString(),
+                eq(UserIdType.EXTERNAL),
+                eq(false),
+                eq(false),
+                eq(false),
+                eq(false)))
+                .thenReturn(mockedUserList);
+
+        EvasysException exception = assertThrows(EvasysException.class,
+                () -> evasysCourseClient.updateCourse(trainingData));
+        assertEquals("Invalid TRAININGID: " + invalidTrainingId, exception.getMessage());
+        assertInstanceOf(NumberFormatException.class, exception.getCause());
+
+        verify(soapPortMock, never()).getCourse(anyString(), any(CourseIdType.class), eq(false), eq(false));
+        verify(soapPortMock, never()).updateCourse(any(Holder.class), eq(false));
     }
 
     @Test

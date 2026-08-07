@@ -86,7 +86,12 @@ public class TrainingProcessorService {
 
     private void processTrainer(final ZLSOSTEVASYSRFC trainingData) {
         final String trainerId = trainingData.getTRAINER1ID();
-        final int subunitId = Integer.parseInt(trainingData.getTEILBEREICHID());
+        final int subunitId;
+        try {
+            subunitId = Integer.parseInt(trainingData.getTEILBEREICHID());
+        } catch (NumberFormatException e) {
+            throw new EvasysException("Invalid TEILBEREICHID: " + trainingData.getTEILBEREICHID(), e);
+        }
 
         insertTrainerOrUpdateIfExists(trainerId, subunitId, trainingData);
 
@@ -141,7 +146,12 @@ public class TrainingProcessorService {
     }
 
     private void processCourse(final ZLSOSTEVASYSRFC trainingData) {
-        final int courseId = Integer.parseInt(trainingData.getTRAININGID());
+        final int courseId;
+        try {
+            courseId = Integer.parseInt(trainingData.getTRAININGID());
+        } catch (NumberFormatException e) {
+            throw new EvasysException("Invalid TRAININGID: " + trainingData.getTRAININGID(), e);
+        }
 
         try {
             if (evasysService.courseExists(courseId)) {

@@ -115,8 +115,13 @@ public class EvasysCourseClient extends AbstractEvasysClient {
                 trainingData.getTRAINER1ID(),
                 trainingData.getTEILBEREICHID());
 
-        final Course existing = getCourse(
-                Integer.parseInt(trainingData.getTRAININGID()));
+        final int courseId;
+        try {
+            courseId = Integer.parseInt(trainingData.getTRAININGID());
+        } catch (NumberFormatException e) {
+            throw new EvasysException("Invalid TRAININGID: " + trainingData.getTRAININGID(), e);
+        }
+        final Course existing = getCourse(courseId);
 
         final Course updated = mapper.mapToCourse(trainingData);
         updated.setMNCourseId(existing.getMNCourseId());

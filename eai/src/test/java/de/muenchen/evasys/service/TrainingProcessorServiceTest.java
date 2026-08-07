@@ -1,5 +1,7 @@
 package de.muenchen.evasys.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -15,10 +17,15 @@ import com.sap.document.sap.rfc.functions.ZLSOEVASYSRFC.ITEVASYSRFC;
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.exception.EvasysException;
 import de.muenchen.evasys.model.SecondaryTrainer;
+import de.muenchen.evasys.service.MetricsService.EventType;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -362,5 +369,73 @@ public class TrainingProcessorServiceTest {
                 eq("Insert failed"),
                 any(EvasysException.class),
                 eq(trainingData));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { "abc", "12.5", " ", "2147483648" })
+    public void invalidTeilbereichIdSkipsTrainerOperationsAndPreservesCause(String invalidTeilbereichId) {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", invalidTeilbereichId, "1");
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evasysMockService.courseExists(1)).thenReturn(false);
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        ArgumentCaptor<EvasysException> exceptionCaptor = ArgumentCaptor.forClass(EvasysException.class);
+        verify(mailNotificationService).notifyError(
+                eq("Trainer processing failed"),
+                eq("Invalid TEILBEREICHID: " + invalidTeilbereichId),
+                exceptionCaptor.capture(),
+                eq(trainingData));
+        assertInstanceOf(NumberFormatException.class, exceptionCaptor.getValue().getCause());
+        assertEquals("Invalid TEILBEREICHID: " + invalidTeilbereichId, exceptionCaptor.getValue().getMessage());
+
+        verify(evasysMockService, never()).trainerExists(anyString(), anyInt());
+        verify(evasysMockService, never()).insertTrainer(any());
+        verify(evasysMockService, never()).updateTrainer(any());
+        verify(evasysMockService, never()).extractSecondaryTrainers(any());
+        verify(metricsService).recordEvent(EventType.TRAINER_PROCESSING_FAILED);
+
+        verify(evasysMockService).insertCourse(trainingData);
+        verify(mailNotificationService, never()).notifyError(
+                eq("Course processing failed"),
+                anyString(),
+                any(),
+                any());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = { "abc", "12.5", " ", "2147483648" })
+    public void invalidTrainingIdSkipsCourseOperationsAndPreservesCause(String invalidTrainingId) {
+        ZLSOSTEVASYSRFC trainingData = createTrainingData("1", "1", invalidTrainingId);
+        ZLSOEVASYSRFC trainingRequest = createRequestWithItems(trainingData);
+
+        when(evasysMockService.trainerExists("1", 1)).thenReturn(false);
+        when(evasysMockService.extractSecondaryTrainers(trainingData)).thenReturn(List.of());
+
+        trainingProcessorService.processTrainingRequest(trainingRequest);
+
+        ArgumentCaptor<EvasysException> exceptionCaptor = ArgumentCaptor.forClass(EvasysException.class);
+        verify(mailNotificationService).notifyError(
+                eq("Course processing failed"),
+                eq("Invalid TRAININGID: " + invalidTrainingId),
+                exceptionCaptor.capture(),
+                eq(trainingData));
+        assertInstanceOf(NumberFormatException.class, exceptionCaptor.getValue().getCause());
+        assertEquals("Invalid TRAININGID: " + invalidTrainingId, exceptionCaptor.getValue().getMessage());
+
+        verify(evasysMockService, never()).courseExists(anyInt());
+        verify(evasysMockService, never()).insertCourse(any());
+        verify(evasysMockService, never()).updateCourse(any());
+        verify(metricsService).recordEvent(EventType.COURSE_PROCESSING_FAILED);
+
+        verify(evasysMockService).insertTrainer(trainingData);
+        verify(mailNotificationService, never()).notifyError(
+                eq("Trainer processing failed"),
+                anyString(),
+                any(),
+                any());
     }
 }

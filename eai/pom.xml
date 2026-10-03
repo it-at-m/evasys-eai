@@ -71,6 +71,11 @@
         <p2.username /> <!-- must be empty, override via Maven settings.xml if needed -->
         <p2.password /> <!-- must be empty, override via Maven settings.xml if needed -->
         <p2.mirror>download.eclipse.org</p2.mirror>
+
+        <!-- TEMPORARY TRANSITIVE DEPENDENCY OVERRIDES FOR SECURITY FIXES -->
+        <!-- Preferably override properties defined in spring-boot-starter -> spring-boot-dependencies POM -->
+        <tomcat.version>11.0.25</tomcat.version>
+        <jackson-bom.version>3.1.7</jackson-bom.version>
     </properties>
 
     <dependencies>

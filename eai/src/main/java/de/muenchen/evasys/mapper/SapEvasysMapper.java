@@ -2,11 +2,13 @@ package de.muenchen.evasys.mapper;
 
 import com.sap.document.sap.rfc.functions.ZLSOSTEVASYSRFC;
 import de.muenchen.evasys.model.SecondaryTrainer;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Condition;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -23,7 +25,7 @@ public interface SapEvasysMapper {
     @Mapping(source = "TRAINER1TITEL", target = "MSTitle")
     @Mapping(source = "TRAINER1VNAME", target = "MSFirstName")
     @Mapping(source = "TRAINER1NNAME", target = "MSSurName")
-    @Mapping(source = "TRAINER1MAIL", target = "MSEmail")
+    @Mapping(source = "TRAINER1MAIL", target = "MSEmail", qualifiedByName = "validEmailOrNull")
     @Mapping(source = "TEILBEREICHID", target = "MNFbid")
     User mapToTrainer(ZLSOSTEVASYSRFC trainingData);
 
@@ -33,7 +35,7 @@ public interface SapEvasysMapper {
     @Mapping(source = "secondaryTrainer.titel", target = "MSTitle")
     @Mapping(source = "secondaryTrainer.vorname", target = "MSFirstName")
     @Mapping(source = "secondaryTrainer.nachname", target = "MSSurName")
-    @Mapping(source = "secondaryTrainer.email", target = "MSEmail")
+    @Mapping(source = "secondaryTrainer.email", target = "MSEmail", qualifiedByName = "validEmailOrNull")
     @Mapping(source = "secondaryTrainer.anrede", target = "MNAddressId")
     @Mapping(source = "trainingData.TEILBEREICHID", target = "MNFbid")
     User mapToSecondaryTrainer(SecondaryTrainer secondaryTrainer, ZLSOSTEVASYSRFC trainingData);
@@ -51,6 +53,15 @@ public interface SapEvasysMapper {
     @Condition
     default boolean isNotNullOrEmpty(final String value) {
         return value != null && !value.isEmpty();
+    }
+
+    /**
+     * Treat malformed optional email addresses as absent so they cannot invalidate a SOAP user request.
+     */
+    @Named("validEmailOrNull")
+    default String validEmailOrNull(final String email) {
+        final String trimmed = email == null ? null : email.trim();
+        return EmailValidator.getInstance().isValid(trimmed) ? trimmed : null;
     }
 
     @AfterMapping

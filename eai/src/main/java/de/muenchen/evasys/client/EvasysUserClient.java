@@ -210,7 +210,7 @@ public class EvasysUserClient extends AbstractEvasysClient {
         updateIfNotEmpty(data.getTRAINER1TITEL(), user::setMSTitle);
         updateIfNotEmpty(data.getTRAINER1VNAME(), user::setMSFirstName);
         updateIfNotEmpty(data.getTRAINER1NNAME(), user::setMSSurName);
-        updateIfNotEmpty(data.getTRAINER1MAIL(), user::setMSEmail);
+        updateIfNotEmpty(mapper.validEmailOrNull(data.getTRAINER1MAIL()), user::setMSEmail);
     }
 
     private void applySecondaryTrainerUpdates(
@@ -221,7 +221,7 @@ public class EvasysUserClient extends AbstractEvasysClient {
         updateIfNotEmpty(trainer.titel(), user::setMSTitle);
         updateIfNotEmpty(trainer.vorname(), user::setMSFirstName);
         updateIfNotEmpty(trainer.nachname(), user::setMSSurName);
-        updateIfNotEmpty(trainer.email(), user::setMSEmail);
+        updateIfNotEmpty(mapper.validEmailOrNull(trainer.email()), user::setMSEmail);
     }
 
     private void updateIfNotEmpty(final String value, final Consumer<String> setter) {

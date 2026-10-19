@@ -2,11 +2,13 @@ package de.muenchen.evasys.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +21,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -408,4 +412,60 @@ public class EvasysUserClientTest {
         assertEquals(1, captured.getMNFbid());
         assertEquals(2, captured.getMNAddressId());
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "invalid", "max@", "max@@example.com" })
+    public void shouldIgnoreInvalidEmailWhenInsertingTrainer(String email) throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1VNAME("Max");
+        trainingData.setTRAINER1MAIL(email);
+        trainingData.setTEILBEREICHID("6");
+
+        evasysUserClient.insertTrainer(trainingData);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock).insertUser(captor.capture());
+        User captured = captor.getValue().value;
+        assertNull(captured.getMSEmail());
+        assertEquals("1", captured.getMSExternalId());
+        assertEquals("Max", captured.getMSFirstName());
+        assertEquals(6, captured.getMNFbid());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "invalid", "max@", "max@@example.com" })
+    public void shouldPreserveExistingEmailWhenUpdatingTrainerWithInvalidEmail(String email) throws Exception {
+        ZLSOSTEVASYSRFC trainingData = new ZLSOSTEVASYSRFC();
+        trainingData.setTRAINER1ID("1");
+        trainingData.setTRAINER1VNAME("Max");
+        trainingData.setTRAINER1MAIL(email);
+
+        User withEmail = new User();
+        withEmail.setMNId(11);
+        withEmail.setMSEmail("existing@example.com");
+        User withoutEmail = new User();
+        withoutEmail.setMNId(22);
+        UserList response = new UserList();
+        response.getUsers().addAll(List.of(withEmail, withoutEmail));
+        when(soapPortMock.getUserByIdConsiderExternalID("1", UserIdType.EXTERNAL, false, false, false, false))
+                .thenReturn(response);
+
+        evasysUserClient.updateTrainer(trainingData);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
+        verify(soapPortMock, times(2)).updateUser(captor.capture());
+        List<Holder<User>> captured = captor.getAllValues();
+        assertEquals(11, captured.getFirst().value.getMNId());
+        assertEquals("existing@example.com", captured.getFirst().value.getMSEmail());
+        assertEquals(22, captured.getLast().value.getMNId());
+        assertNull(captured.getLast().value.getMSEmail());
+        for (Holder<User> holder : captured) {
+            assertEquals("1", holder.value.getMSExternalId());
+            assertEquals("Max", holder.value.getMSFirstName());
+        }
+    }
+
 }

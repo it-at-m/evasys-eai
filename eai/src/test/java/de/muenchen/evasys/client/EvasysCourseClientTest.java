@@ -26,6 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -263,7 +264,7 @@ public class EvasysCourseClientTest {
 
         evasysCourseClient.insertCourse(trainingData);
 
-        org.mockito.ArgumentCaptor<Course> captor = org.mockito.ArgumentCaptor.forClass(Course.class);
+        ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
         verify(soapPortMock).insertCourse(captor.capture());
 
         Course captured = captor.getValue();
@@ -347,7 +348,7 @@ public class EvasysCourseClientTest {
         evasysCourseClient.updateCourse(trainingData);
 
         @SuppressWarnings("unchecked")
-        org.mockito.ArgumentCaptor<Holder<Course>> captor = org.mockito.ArgumentCaptor.forClass(Holder.class);
+        ArgumentCaptor<Holder<Course>> captor = ArgumentCaptor.forClass(Holder.class);
         verify(soapPortMock).updateCourse(captor.capture(), eq(false));
 
         Course captured = captor.getValue().value;
@@ -394,7 +395,7 @@ public class EvasysCourseClientTest {
 
         evasysCourseClient.insertCourse(trainingData);
 
-        org.mockito.ArgumentCaptor<Course> captor = org.mockito.ArgumentCaptor.forClass(Course.class);
+        ArgumentCaptor<Course> captor = ArgumentCaptor.forClass(Course.class);
         verify(soapPortMock).insertCourse(captor.capture());
 
         Course captured = captor.getValue();
@@ -582,7 +583,7 @@ public class EvasysCourseClientTest {
         fault.setSErrorMessage("ERR_313");
         SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Already exists", fault);
 
-        org.mockito.Mockito.doThrow(soapfaultMessage)
+        Mockito.doThrow(soapfaultMessage)
                 .when(soapPortMock)
                 .updateCourse(any(Holder.class), eq(false));
 
@@ -618,7 +619,7 @@ public class EvasysCourseClientTest {
         fault.setSErrorMessage("ERR_999");
         SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Some other error", fault);
 
-        org.mockito.Mockito.doThrow(soapfaultMessage)
+        Mockito.doThrow(soapfaultMessage)
                 .when(soapPortMock)
                 .insertCourse(any(Course.class));
 
@@ -663,7 +664,7 @@ public class EvasysCourseClientTest {
         fault.setSErrorMessage("ERR_999");
         SoapfaultMessage soapfaultMessage = new SoapfaultMessage("Some other error", fault);
 
-        org.mockito.Mockito.doThrow(soapfaultMessage)
+        Mockito.doThrow(soapfaultMessage)
                 .when(soapPortMock)
                 .updateCourse(any(Holder.class), eq(false));
 

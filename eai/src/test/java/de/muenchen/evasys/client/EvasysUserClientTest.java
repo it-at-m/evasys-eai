@@ -26,6 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import wsdl.soapserver_v100.SoapPort;
 import wsdl.soapserver_v100.SoapfaultMessage;
@@ -228,7 +229,7 @@ public class EvasysUserClientTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
-        verify(soapPortMock, org.mockito.Mockito.times(3)).updateUser(captor.capture());
+        verify(soapPortMock, Mockito.times(3)).updateUser(captor.capture());
 
         List<Holder<User>> allCaptured = captor.getAllValues();
         assertEquals(3, allCaptured.size());
@@ -359,7 +360,7 @@ public class EvasysUserClientTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Holder<User>> captor = ArgumentCaptor.forClass(Holder.class);
-        verify(soapPortMock, org.mockito.Mockito.times(3)).updateUser(captor.capture());
+        verify(soapPortMock, Mockito.times(3)).updateUser(captor.capture());
 
         List<Holder<User>> allCaptured = captor.getAllValues();
         assertEquals(3, allCaptured.size());

@@ -30,7 +30,7 @@ The evasys EAI acts as middleware that:
 
 ### Prerequisites
 
-- Java 21+
+- Java 25+
 - Maven 3.9+
 
 ### Build & Run

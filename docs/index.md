@@ -42,7 +42,7 @@ The **evasys EAI** (Enterprise Application Integration) is a middleware componen
 
 | Component    | Technology                        |
 | ------------ | --------------------------------- |
-| Runtime      | Java 21, Spring Boot 4.x          |
+| Runtime      | Java 25, Spring Boot 4.x          |
 | Web Services | Apache CXF (SOAP/WSDL)            |
 | Data Mapping | MapStruct                         |
 | Monitoring   | Micrometer, Prometheus            |

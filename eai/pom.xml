@@ -39,7 +39,7 @@
 
     <properties>
         <!-- Compilation -->
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -115,7 +115,7 @@
             <version>${cxf.version}</version>
         </dependency>
 
-        <!-- JAXB runtime (Java 21) -->
+        <!-- JAXB runtime (not included in the JDK since Java 11) -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>

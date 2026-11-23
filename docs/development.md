@@ -4,7 +4,7 @@ This guide covers setting up a development environment and working with the code
 
 ## Prerequisites
 
-- **Java 21** or later
+- **Java 25** or later
 - **Maven 3.9+**
 - **Docker** (optional, for container deployment)
 
@@ -79,7 +79,7 @@ docker run -p 8080:8080 \
   evasys-eai
 ```
 
-The container uses a minimal Red Hat UBI base image with Java 21 runtime. Configuration is passed via environment variables (see [Configuration](./configuration.md) for all options).
+The container uses a minimal Red Hat UBI base image with Java 25 runtime. Configuration is passed via environment variables (see [Configuration](./configuration.md) for all options).
 
 ## Code Style
 
